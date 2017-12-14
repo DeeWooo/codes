@@ -1,0 +1,30 @@
+debug: true
+
+spring:
+  aop:
+    proxy-target-class: true
+  devtools:
+        restart:
+            enabled: true
+
+security:
+  user:
+    password: none
+  oauth2:
+    client:
+      accessTokenUri: http://127.0.0.1:9010/uaa/oauth/token
+      userAuthorizationUri: http://127.0.0.1:9010/uaa/oauth/authorize
+      clientId: internal_client
+      clientSecret: 7GF-td8-98s-9hq-HU8
+    resource:
+      userInfoUri: http://127.0.0.1:9010/uaa/api/account/principal
+
+zuul:
+  routes:
+    sso-server-account:
+      path: /api/account/**
+      url: http://127.0.0.1:9010/uaa/api/account/
+
+logging:
+  level:
+    org.springframework.security: DEBUG
