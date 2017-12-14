@@ -18,7 +18,7 @@ import com.github.mongobee.changeset.ChangeSet;
 @ChangeLog(order = "001")
 public class DatabaseInitialSetup {
 
-    private static final String APP_NAME = "Passport";
+    private static final String APP_NAME = "PassportServer";
 
     @ChangeSet(order = "01", author = "Louis", id = "addApps")
     public void addApps(MongoTemplate mongoTemplate) {

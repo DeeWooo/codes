@@ -20,51 +20,57 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 @Document(collection = "User")
 public class User extends AbstractAuditableDomain implements Serializable {
 
-    private static final long serialVersionUID = 1L;
+    private static final long  serialVersionUID = 1L;
+
+    public static final String FIELD_USER_NAME  = "userName";
+
+    public static final String FIELD_EMAIL      = "email";
+
+    public static final String FIELD_MOBILE_NO  = "mobileNo";
 
     @Id
-    private String            id;
+    private String             id;
 
     @NotNull
     @Size(min = 1, max = 50)
     @Indexed
-    private String            userName;
+    private String             userName;
 
     @Size(max = 50)
-    private String            firstName;
+    private String             firstName;
 
     @Size(max = 50)
-    private String            lastName;
+    private String             lastName;
 
     @Email
     @Size(min = 5, max = 100)
     @Indexed
-    private String            email;
+    private String             email;
 
     @Indexed
-    private String            mobileNo;
+    private String             mobileNo;
 
     @NotNull
     @Size(min = 60, max = 60)
     @JsonIgnore
-    private String            passwordHash;
+    private String             passwordHash;
 
-    private Boolean           activated;
-
-    @Size(max = 20)
-    @JsonIgnore
-    private String            activationKey;
+    private Boolean            activated;
 
     @Size(max = 20)
     @JsonIgnore
-    private String            resetKey;
+    private String             activationKey;
 
-    private Instant           resetTime;
+    @Size(max = 20)
+    @JsonIgnore
+    private String             resetKey;
+
+    private Instant            resetTime;
 
     @Size(max = 256)
-    private String            avatarImageUrl;
+    private String             avatarImageUrl;
 
-    private Boolean           enabled;
+    private Boolean            enabled;
 
     public User() {
         super();
