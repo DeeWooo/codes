@@ -41,8 +41,6 @@ public final class LogUtils {
             if (StringUtils.isNotEmpty(profile)) {
                 sb.append(MessageFormat.format("Profile: {0}", profile)).append(IOUtils.LINE_SEPARATOR);
             }
-            //            sb.append(MessageFormat.format("Client IP: {0}", RequestUtils.getRealClientIp(request)))
-            //                    .append(IOUtils.LINE_SEPARATOR);
         }
         String userName = SecurityUtils.getCurrentUserName() != null ? SecurityUtils.getCurrentUserName()
                 : ApplicationConstants.SYSTEM_ACCOUNT;
