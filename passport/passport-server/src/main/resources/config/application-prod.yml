@@ -24,10 +24,6 @@ spring:
         cache-seconds: 1
     thymeleaf:
         cache: false
-    data:
-        mongodb:
-            database: user
-            uri: mongodb://useraccount:bestnlpsys001@122.144.200.100:47017,122.144.200.101:47017,122.144.200.102:47017,122.144.200.103:47017/user?replicaSet=rsdeepbrain&connectTimeoutMS=30000
 endpoints:
     shutdown:
         enabled: true
@@ -56,5 +52,3 @@ application:
             host: localhost
             port: 5000
             queueSize: 512
-    zookeeper:
-        adminUrl: http://192.168.20.93:8888 #https://github.com/ireaderlab/zkdash
