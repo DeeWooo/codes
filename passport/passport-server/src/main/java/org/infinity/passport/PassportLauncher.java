@@ -90,7 +90,7 @@ public class PassportLauncher extends WebMvcConfigurerAdapter {
                 System.getProperty("logging.path") + IOUtils.DIR_SEPARATOR + env.getProperty("info.artifact.id") + ".log");
         
         // @formatter:on
-        LOGGER.warn(serverInfo);
+        LOGGER.info(serverInfo);
     }
 
     public static void checkProfiles(Environment env) {

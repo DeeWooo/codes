@@ -71,7 +71,7 @@ public class MailServiceImpl implements MailService {
         Context context = new Context(locale);
         context.setVariable("user", user);
         context.setVariable("baseUrl", baseUrl);
-        String content = templateEngine.process("/email/activation-email", context);
+        String content = templateEngine.process("email/activation-email", context);
         String subject = messageSource.getMessage("email.activation.title", null, locale);
         sendEmail(user.getEmail(), subject, content, false, true);
     }
@@ -83,7 +83,7 @@ public class MailServiceImpl implements MailService {
         Context context = new Context(locale);
         context.setVariable("user", user);
         context.setVariable("baseUrl", baseUrl);
-        String content = templateEngine.process("/email/creation-email", context);
+        String content = templateEngine.process("email/creation-email", context);
         String subject = messageSource.getMessage("email.activation.title", null, locale);
         sendEmail(user.getEmail(), subject, content, false, true);
     }
@@ -95,7 +95,7 @@ public class MailServiceImpl implements MailService {
         Context context = new Context(locale);
         context.setVariable("user", user);
         context.setVariable("baseUrl", baseUrl);
-        String content = templateEngine.process("/email/password-reset-email", context);
+        String content = templateEngine.process("email/password-reset-email", context);
         String subject = messageSource.getMessage("email.reset.title", null, locale);
         sendEmail(user.getEmail(), subject, content, false, true);
     }

@@ -41,7 +41,7 @@ public class ApplicationErrorController implements ErrorController {
      */
     @RequestMapping(value = ERROR_PATH, produces = MediaType.TEXT_HTML_VALUE)
     public ModelAndView errorHtml(HttpServletRequest request) {
-        return new ModelAndView("/errors/error", getErrorAttributes(request, false));
+        return new ModelAndView("errors/error", getErrorAttributes(request, false));
     }
 
     /**
