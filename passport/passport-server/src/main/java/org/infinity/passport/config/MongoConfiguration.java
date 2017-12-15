@@ -78,6 +78,7 @@ public class MongoConfiguration {
     public Mongobee mongobee(MongoClient mongoClient, MongoTemplate mongoTemplate) {
         LOGGER.debug("Configuring Mongobee");
         Mongobee mongobee = new Mongobee(mongoClient);
+        // For embedded mongo
         mongobee.setDbName(mongoClient.listDatabaseNames().first());
         mongobee.setMongoTemplate(mongoTemplate);
         mongobee.setChangeLogsScanPackage(DatabaseInitialSetup.class.getPackage().getName());
