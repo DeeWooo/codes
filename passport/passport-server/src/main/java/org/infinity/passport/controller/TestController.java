@@ -3,6 +3,7 @@ package org.infinity.passport.controller;
 import org.infinity.passport.domain.Authority;
 import org.infinity.passport.domain.User;
 import org.infinity.passport.repository.UserRepository;
+import org.infinity.passport.service.MailService;
 import org.infinity.passport.utils.RandomUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,6 +29,9 @@ public class TestController {
 
     @Autowired
     private UserRepository      userRepository;
+
+    @Autowired
+    private MailService         mailService;
 
     @ApiOperation("测试审计功能")
     @RequestMapping(value = "/api/test/user-audit", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
@@ -85,6 +89,15 @@ public class TestController {
 
         userRepository.delete(user2.getId());
 
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @ApiOperation("测试发送邮件功能")
+    @RequestMapping(value = "/api/test/email", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @Secured(Authority.DEVELOPER)
+    @Timed
+    public ResponseEntity<Void> testEmail() {
+        mailService.sendEmail("pm6422@126.com", "test", "test", false, false);
         return new ResponseEntity<>(HttpStatus.OK);
     }
 }

@@ -25,7 +25,11 @@ import org.thymeleaf.spring4.SpringTemplateEngine;
 @Service
 public class MailServiceImpl implements MailService {
 
-    private static final Logger  LOGGER = LoggerFactory.getLogger(MailServiceImpl.class);
+    private static final Logger  LOGGER   = LoggerFactory.getLogger(MailServiceImpl.class);
+
+    private static final String  USER     = "user";
+
+    private static final String  BASE_URL = "baseUrl";
 
     @Autowired
     private MailProperties       mailProperties;
@@ -43,12 +47,11 @@ public class MailServiceImpl implements MailService {
      * System default email address that sends the e-mails.
      */
     // private String from;
-
     @Async
-    private void sendEmail(String to, String subject, String content, boolean isMultipart, boolean isHtml) {
+    @Override
+    public void sendEmail(String to, String subject, String content, boolean isMultipart, boolean isHtml) {
         LOGGER.debug("Send e-mail[multipart '{}' and html '{}'] to '{}' with subject '{}' and content={}", isMultipart,
                 isHtml, to, subject, content);
-
         // Prepare message using a Spring helper
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();
         try {
@@ -65,38 +68,35 @@ public class MailServiceImpl implements MailService {
     }
 
     @Async
+    @Override
+    public void sendEmailFromTemplate(User user, String templateName, String titleKey, String baseUrl) {
+        Locale locale = Locale.SIMPLIFIED_CHINESE;
+        Context context = new Context(locale);
+        context.setVariable(USER, user);
+        context.setVariable(BASE_URL, baseUrl);
+        String content = templateEngine.process(templateName, context);
+        String subject = messageSource.getMessage(titleKey, null, locale);
+        sendEmail(user.getEmail(), subject, content, false, true);
+    }
+
+    @Async
+    @Override
     public void sendActivationEmail(User user, String baseUrl) {
         LOGGER.debug("Sending activation e-mail to '{}'", user.getEmail());
-        Locale locale = Locale.SIMPLIFIED_CHINESE;
-        Context context = new Context(locale);
-        context.setVariable("user", user);
-        context.setVariable("baseUrl", baseUrl);
-        String content = templateEngine.process("email/activation-email", context);
-        String subject = messageSource.getMessage("email.activation.title", null, locale);
-        sendEmail(user.getEmail(), subject, content, false, true);
+        sendEmailFromTemplate(user, "email/activation-email", "email.activation.title", baseUrl);
     }
 
     @Async
+    @Override
     public void sendCreationEmail(User user, String baseUrl) {
         LOGGER.debug("Sending creation e-mail to '{}'", user.getEmail());
-        Locale locale = Locale.SIMPLIFIED_CHINESE;
-        Context context = new Context(locale);
-        context.setVariable("user", user);
-        context.setVariable("baseUrl", baseUrl);
-        String content = templateEngine.process("email/creation-email", context);
-        String subject = messageSource.getMessage("email.activation.title", null, locale);
-        sendEmail(user.getEmail(), subject, content, false, true);
+        sendEmailFromTemplate(user, "email/creation-email", "email.activation.title", baseUrl);
     }
 
     @Async
+    @Override
     public void sendPasswordResetMail(User user, String baseUrl) {
         LOGGER.debug("Sending password reset e-mail to '{}'", user.getEmail());
-        Locale locale = Locale.SIMPLIFIED_CHINESE;
-        Context context = new Context(locale);
-        context.setVariable("user", user);
-        context.setVariable("baseUrl", baseUrl);
-        String content = templateEngine.process("email/password-reset-email", context);
-        String subject = messageSource.getMessage("email.reset.title", null, locale);
-        sendEmail(user.getEmail(), subject, content, false, true);
+        sendEmailFromTemplate(user, "email/password-reset-email", "email.reset.title", baseUrl);
     }
 }
