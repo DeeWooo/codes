@@ -38,9 +38,9 @@ function run() {
         JAVA_MEM_OPTS=" -server -Xms1g -Xmx1g -XX:PermSize=128m -XX:SurvivorRatio=2 -XX:+UseParallelGC "
     fi
     echo -e "Starting the $appName"
-    echo "Start Command: nohup java -jar $appDir/$appName --logback.loglevel=WARN --spring.profiles.active=$profiles --server.port=$serverPort >> $appStartLog 2>&1 &\n"
+    echo "Start Command: nohup java -jar $appDir/$appName --logback.loglevel=INFO --spring.profiles.active=$profiles --server.port=$serverPort >> $appStartLog 2>&1 &\n"
     . /etc/profile
-    nohup java -jar $appDir/$appName --logback.loglevel=WARN --spring.profiles.active=$profiles --server.port=$serverPort >> $appStartLog 2>&1 &
+    nohup java -jar $appDir/$appName --logback.loglevel=INFO --spring.profiles.active=$profiles --server.port=$serverPort >> $appStartLog 2>&1 &
 }
 
 function watchStartLog(){
