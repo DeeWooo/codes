@@ -91,11 +91,11 @@ application:
         max-age: 1800
     swagger:
         api:
-            title: SSO Server API
-            description: SSO Server 接口文档
+            title: Passport Server API
+            description: Passport Server 接口文档
         open-api:
-            title: SSO Server Open API
-            description: SSO Server 开放接口文档
+            title: Passport Server Open API
+            description: Passport Server 开放接口文档
         version: #project.version#
         terms-of-service-url: http://www.infinity.org
         contact-name: louis

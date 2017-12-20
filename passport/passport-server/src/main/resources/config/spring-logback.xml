@@ -6,8 +6,8 @@
         File path definition
         *************************************************************************************
     -->
-    <property name="LOG_FILE" value="${logging.path}/#project.artifactId#-%d{yyyy-MM-dd}.log"/>
-    <property name="ERROR_LOG_FILE" value="${logging.path}/#project.artifactId#.error-%d{yyyy-MM-dd}.log"/>
+    <property name="LOG_FILE" value="${logging.path}/#project.artifactId#/#project.artifactId#-%d{yyyy-MM-dd}.log"/>
+    <property name="ERROR_LOG_FILE" value="${logging.path}/#project.artifactId#/#project.artifactId#.error-%d{yyyy-MM-dd}.log"/>
     <!--
         *************************************************************************************
         Conversion rules

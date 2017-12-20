@@ -5,10 +5,12 @@ import java.net.UnknownHostException;
 import java.text.MessageFormat;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Date;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateFormatUtils;
 import org.infinity.passport.config.ApplicationConstants;
 import org.infinity.passport.config.ApplicationProperties;
 import org.infinity.passport.utils.ApplicationPropertiesUtils;
@@ -86,8 +88,9 @@ public class PassportLauncher extends WebMvcConfigurerAdapter {
                 env.getProperty("server.port"),
                 StringUtils.isEmpty(env.getProperty("server.context-path")) ? "" : env.getProperty("server.context-path"),
                 org.springframework.util.StringUtils.arrayToCommaDelimitedString(env.getActiveProfiles()),
-                System.getProperty("PID"),
-                System.getProperty("logging.path") + IOUtils.DIR_SEPARATOR + env.getProperty("info.artifact.id") + ".log");
+                env.getProperty("PID"),
+                env.getProperty("logging.path") + IOUtils.DIR_SEPARATOR + env.getProperty("info.artifact.id") + 
+                IOUtils.DIR_SEPARATOR + env.getProperty("info.artifact.id") + "-" + DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.format(new Date()) + ".log");
         
         // @formatter:on
         LOGGER.info(serverInfo);
