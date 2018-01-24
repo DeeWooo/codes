@@ -33,7 +33,7 @@ public class HanlpTest {
 
         for (String sentence : testCase) {
             List<Term> termList = segment.seg(sentence);
-            LOGGER.debug("Testing hanlp custom dictionary successfully: {}", termList);
+            LOGGER.debug("Result: {}", termList);
         }
     }
 }
