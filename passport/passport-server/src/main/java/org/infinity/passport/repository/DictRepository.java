@@ -9,7 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 
 /**
- * Spring Data MongoDB repository for the Authority Dict.
+ * Spring Data MongoDB repository for the Dict entity.
  */
 public interface DictRepository extends MongoRepository<Dict, String> {
 
