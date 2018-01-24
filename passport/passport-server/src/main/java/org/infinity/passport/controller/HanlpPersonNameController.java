@@ -78,7 +78,7 @@ public class HanlpPersonNameController {
     @Secured(Authority.DEVELOPER)
     @Timed
     public ResponseEntity<List<Term>> segment(
-            @ApiParam(value = "inputText", required = true, defaultValue = "刘德华多大的") @RequestParam(value = "inputText", required = false) String inputText) {
+            @ApiParam(value = "inputText", required = true, defaultValue = "买买提·亚合甫多大的") @RequestParam(value = "inputText", required = false) String inputText) {
         Segment segment = HanLP.newSegment().enableNameRecognize(true);
         String[] dictionaries = { HanlpPersonName.class.getName() };
         HanLP.Config.CustomDictionaryPath = dictionaries;
