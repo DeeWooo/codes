@@ -81,6 +81,7 @@ public class HanlpPersonNameController {
             @ApiParam(value = "inputText", required = true, defaultValue = "买买提·亚合甫多大的") @RequestParam(value = "inputText", required = false) String inputText) {
         Segment segment = HanLP.newSegment().enableNameRecognize(true);
         String[] dictionaries = { HanlpPersonName.class.getName() };
+        // 用户自定义词典中，第一个是主词典，其他是副词典。主词典会被缓存存储为.bin的文件中。
         HanLP.Config.CustomDictionaryPath = dictionaries;
         HanLP.Config.IOAdapter = mongoDbIOAdapter;
         List<Term> termList = segment.seg(inputText);
