@@ -52,10 +52,7 @@ public class WebConfigurer implements ServletContextInitializer, EmbeddedServlet
 
     @Override
     public void onStartup(ServletContext servletContext) throws ServletException {
-        if (env.getActiveProfiles().length != 0) {
-            LOGGER.info("Starting web application, using profiles: {}",
-                    org.springframework.util.StringUtils.arrayToCommaDelimitedString(env.getActiveProfiles()));
-        }
+        LOGGER.info("Configuring web application");
         EnumSet<DispatcherType> disps = EnumSet.of(DispatcherType.REQUEST, DispatcherType.FORWARD,
                 DispatcherType.ASYNC);
         initMetrics(servletContext, disps);
@@ -63,7 +60,7 @@ public class WebConfigurer implements ServletContextInitializer, EmbeddedServlet
         if (env.acceptsProfiles(ApplicationConstants.SPRING_PROFILE_PRODUCTION)) {
             initCachingHttpHeadersFilter(servletContext, disps);
         }
-        LOGGER.info("Web application fully configured");
+        LOGGER.info("Configured web application");
     }
 
     /**

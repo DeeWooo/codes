@@ -6,7 +6,6 @@ import org.springframework.boot.autoconfigure.security.oauth2.client.EnableOAuth
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
 @SpringBootApplication
 @EnableZuulProxy
@@ -17,18 +16,20 @@ public class PassportClient extends WebSecurityConfigurerAdapter {
         SpringApplication.run(PassportClient.class, args);
     }
 
-    
     @Override
     public void configure(HttpSecurity http) throws Exception {
         // @formatter:off
         http
-        .logout().and()
-        .authorizeRequests()
-            .antMatchers("/index.html", "/home.html", "/", "/login").permitAll()
-            .anyRequest().authenticated()
-            .and()
+        .logout().logoutSuccessUrl("/")
+        .and()
+//        .logout().and()
+//        .authorizeRequests()
+//            .antMatchers("/index.html", "/home.html", "/", "/login").permitAll()
+//            .anyRequest().authenticated()
+//            .and()
         .csrf()
-            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
+            .disable();
+//            .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse());
         // @formatter:on
     }
 }

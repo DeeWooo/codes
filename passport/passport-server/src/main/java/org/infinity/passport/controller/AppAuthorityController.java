@@ -26,13 +26,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -64,7 +65,7 @@ public class AppAuthorityController {
 
     @ApiOperation("创建应用权限")
     @ApiResponses(value = { @ApiResponse(code = 201, message = "成功创建"), @ApiResponse(code = 400, message = "字典名已存在") })
-    @RequestMapping(value = "/api/app-authority/app-authorities", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping("/api/app-authority/app-authorities")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<Void> createAppAuthority(
@@ -90,7 +91,7 @@ public class AppAuthorityController {
 
     @ApiOperation("获取应用权限分页列表")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取") })
-    @RequestMapping(value = "/api/app-authority/app-authorities", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/app-authority/app-authorities")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<List<AppAuthorityDTO>> getAppAuthorities(Pageable pageable,
@@ -108,7 +109,7 @@ public class AppAuthorityController {
 
     @ApiOperation("根据字典ID检索应用权限信息")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取"), @ApiResponse(code = 400, message = "应用权限不存在") })
-    @RequestMapping(value = "/api/app-authority/app-authorities/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/app-authority/app-authorities/{id}")
     @Secured({ Authority.DEVELOPER, Authority.USER })
     @Timed
     public ResponseEntity<AppAuthorityDTO> getAppAuthority(
@@ -121,7 +122,7 @@ public class AppAuthorityController {
 
     @ApiOperation("根据应用名称检索应用权限信息")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取") })
-    @RequestMapping(value = "/api/app-authority/app-name/{appName}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/app-authority/app-name/{appName}")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<List<AppAuthorityDTO>> getAppAuthorities(
@@ -137,7 +138,7 @@ public class AppAuthorityController {
 
     @ApiOperation("更新应用权限信息")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功更新"), @ApiResponse(code = 400, message = "应用权限不存在") })
-    @RequestMapping(value = "/api/app-authority/app-authorities", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping("/api/app-authority/app-authorities")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<Void> updateAppAuthority(
@@ -154,7 +155,7 @@ public class AppAuthorityController {
 
     @ApiOperation(value = "根据字典ID删除应用权限信息", notes = "数据有可能被其他数据所引用，删除之后可能出现一些问题")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功删除"), @ApiResponse(code = 400, message = "应用权限不存在") })
-    @RequestMapping(value = "/api/app-authority/app-authorities/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping("/api/app-authority/app-authorities/{id}")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<Void> deleteAppAuthority(@ApiParam(value = "字典编号", required = true) @PathVariable String id) {

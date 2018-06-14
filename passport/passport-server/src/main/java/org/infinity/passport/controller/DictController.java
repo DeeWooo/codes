@@ -25,13 +25,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -60,7 +61,7 @@ public class DictController {
 
     @ApiOperation("创建数据字典")
     @ApiResponses(value = { @ApiResponse(code = 201, message = "成功创建"), @ApiResponse(code = 400, message = "字典名已存在") })
-    @RequestMapping(value = "/api/dict/dicts", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping("/api/dict/dicts")
     @Secured(Authority.DEVELOPER)
     @Timed
     public ResponseEntity<Void> createDict(
@@ -80,7 +81,7 @@ public class DictController {
 
     @ApiOperation("获取数据字典分页列表")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取") })
-    @RequestMapping(value = "/api/dict/dicts", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/dict/dicts")
     @Secured(Authority.DEVELOPER)
     @Timed
     public ResponseEntity<List<DictDTO>> getDicts(Pageable pageable,
@@ -95,7 +96,7 @@ public class DictController {
 
     @ApiOperation("根据字典ID检索数据字典信息")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取"), @ApiResponse(code = 400, message = "数据字典不存在") })
-    @RequestMapping(value = "/api/dict/dicts/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/dict/dicts/{id}")
     @Secured({ Authority.DEVELOPER, Authority.USER })
     @Timed
     public ResponseEntity<DictDTO> getDict(@ApiParam(value = "字典编号", required = true) @PathVariable String id) {
@@ -106,7 +107,7 @@ public class DictController {
 
     @ApiOperation("根据字典的状态获取数据字典")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取") })
-    @RequestMapping(value = "/api/dict/all", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/dict/all")
     @Secured({ Authority.DEVELOPER, Authority.USER })
     @Timed
     public ResponseEntity<List<DictDTO>> getDicts(
@@ -123,7 +124,7 @@ public class DictController {
 
     @ApiOperation("更新数据字典信息")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功更新"), @ApiResponse(code = 400, message = "数据字典不存在") })
-    @RequestMapping(value = "/api/dict/dicts", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping("/api/dict/dicts")
     @Secured(Authority.DEVELOPER)
     @Timed
     public ResponseEntity<Void> updateDict(
@@ -139,7 +140,7 @@ public class DictController {
 
     @ApiOperation(value = "根据字典ID删除数据字典信息", notes = "数据有可能被其他数据所引用，删除之后可能出现一些问题")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功删除"), @ApiResponse(code = 400, message = "数据字典不存在") })
-    @RequestMapping(value = "/api/dict/dicts/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping("/api/dict/dicts/{id}")
     @Secured(Authority.DEVELOPER)
     @Timed
     public ResponseEntity<Void> deleteDict(@ApiParam(value = "字典编号", required = true) @PathVariable String id) {

@@ -22,13 +22,12 @@ import org.infinity.passport.utils.HttpHeaderCreator;
 import org.infinity.passport.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -64,7 +63,7 @@ public class AuthorityAdminMenuController {
 
     @ApiOperation("查询当前用户权限关联的菜单")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取") })
-    @RequestMapping(value = "/api/authority-admin-menu/authority-menus", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/authority-admin-menu/authority-menus")
     @Secured({ Authority.USER })
     @Timed
     public ResponseEntity<List<AdminManagedMenuDTO>> getAuthorityMenus(
@@ -80,7 +79,7 @@ public class AuthorityAdminMenuController {
 
     @ApiOperation("查询当前用户权限关联的链接")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取") })
-    @RequestMapping(value = "/api/authority-admin-menu/authority-links", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/authority-admin-menu/authority-links")
     @Secured({ Authority.USER })
     @Timed
     public ResponseEntity<List<AdminMenuDTO>> getAuthorityLinks(
@@ -96,7 +95,7 @@ public class AuthorityAdminMenuController {
 
     @ApiOperation("根据权限名称查看菜单信息")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取") })
-    @RequestMapping(value = "/api/authority-admin-menu/menu-info", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/authority-admin-menu/menu-info")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<List<AdminManagedMenuDTO>> getMenus(
@@ -127,7 +126,7 @@ public class AuthorityAdminMenuController {
 
     @ApiOperation("更新权限菜单")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功更新"), @ApiResponse(code = 400, message = "权限信息不存在") })
-    @RequestMapping(value = "/api/authority-admin-menu/update-authority-menus", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping("/api/authority-admin-menu/update-authority-menus")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<Void> updateMenus(
@@ -149,5 +148,4 @@ public class AuthorityAdminMenuController {
         return ResponseEntity.ok()
                 .headers(httpHeaderCreator.createSuccessHeader("notification.admin.authority.menu.updated")).build();
     }
-
 }

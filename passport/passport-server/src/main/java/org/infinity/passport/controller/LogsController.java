@@ -7,11 +7,10 @@ import org.infinity.passport.domain.Authority;
 import org.infinity.passport.dto.LoggerDTO;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,7 +25,7 @@ import ch.qos.logback.classic.LoggerContext;
 @RestController
 public class LogsController {
 
-    @RequestMapping(value = "/management/app/logs", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/management/app/logs")
     @Secured(Authority.DEVELOPER)
     @Timed
     public List<LoggerDTO> getList() {
@@ -34,7 +33,7 @@ public class LogsController {
         return context.getLoggerList().stream().map(LoggerDTO::new).collect(Collectors.toList());
     }
 
-    @RequestMapping(value = "/management/app/logs", method = RequestMethod.PUT)
+    @PutMapping("/management/app/logs")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Secured(Authority.DEVELOPER)
     @Timed

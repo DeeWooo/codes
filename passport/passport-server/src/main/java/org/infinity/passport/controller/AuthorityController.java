@@ -20,13 +20,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codahale.metrics.annotation.Timed;
@@ -54,7 +55,7 @@ public class AuthorityController {
 
     @ApiOperation("创建权限")
     @ApiResponses(value = { @ApiResponse(code = 201, message = "成功创建") })
-    @RequestMapping(value = "/api/authority/authorities", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping("/api/authority/authorities")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<Void> createAuthority(
@@ -68,7 +69,7 @@ public class AuthorityController {
 
     @ApiOperation("获取权限列表")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取") })
-    @RequestMapping(value = "/api/authority/authorities", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/authority/authorities")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<List<AuthorityDTO>> getAuthorities(Pageable pageable) throws URISyntaxException {
@@ -81,7 +82,7 @@ public class AuthorityController {
 
     @ApiOperation("获取所有权限")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取") })
-    @RequestMapping(value = "/api/authority/authorities/all", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/authority/authorities/all")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<List<AuthorityDTO>> getAllAuthorities() {
@@ -92,7 +93,7 @@ public class AuthorityController {
 
     @ApiOperation("根据权限名称检索权限信息")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取"), @ApiResponse(code = 400, message = "权限信息不存在") })
-    @RequestMapping(value = "/api/authority/authorities/{name}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/authority/authorities/{name}")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<AuthorityDTO> getAuthority(
@@ -105,7 +106,7 @@ public class AuthorityController {
 
     @ApiOperation("更新权限信息")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功更新"), @ApiResponse(code = 400, message = "权限信息不存在") })
-    @RequestMapping(value = "/api/authority/authorities", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping("/api/authority/authorities")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<Void> updateAuthority(
@@ -121,7 +122,7 @@ public class AuthorityController {
 
     @ApiOperation(value = "根据权限名称删除权限信息", notes = "数据有可能被其他数据所引用，删除之后可能出现一些问题")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功删除"), @ApiResponse(code = 400, message = "权限信息不存在") })
-    @RequestMapping(value = "/api/authority/authorities/{name}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping("/api/authority/authorities/{name}")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<Void> deleteAuthority(@ApiParam(value = "权限名称", required = true) @PathVariable String name) {

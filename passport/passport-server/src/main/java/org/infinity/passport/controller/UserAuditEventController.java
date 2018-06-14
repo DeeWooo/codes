@@ -15,11 +15,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -40,7 +38,7 @@ public class UserAuditEventController {
     private PersistenceAuditEventRepository persistenceAuditEventRepository;
 
     @ApiOperation("获取用户审计事件分页列表")
-    @RequestMapping(value = "/api/user-audit-event/user-audit-events", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/user-audit-event/user-audit-events")
     @Secured(Authority.DEVELOPER)
     @Timed
     public ResponseEntity<List<PersistentAuditEvent>> getUserAuditEvents(Pageable pageable,

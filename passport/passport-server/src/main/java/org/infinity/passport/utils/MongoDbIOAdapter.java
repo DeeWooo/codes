@@ -30,7 +30,6 @@ public class MongoDbIOAdapter implements IIOAdapter {
     @SuppressWarnings("unchecked")
     @Override
     public InputStream open(String entityClassName) throws IOException {
-
         if (StringUtils.endsWith(entityClassName, Predefine.BIN_EXT)) {
             String className = StringUtils.removeEnd(entityClassName, Predefine.BIN_EXT);
 
@@ -51,7 +50,7 @@ public class MongoDbIOAdapter implements IIOAdapter {
             String resultStr = "";
             List<IHanlpDictionary> results = mongoTemplate.findAll(clazz);
             for (IHanlpDictionary result : results) {
-                resultStr = resultStr + result.toDictionaryString() + IOUtils.LINE_SEPARATOR_UNIX;
+                resultStr = resultStr + result.toDictionaryString() + IOUtils.LINE_SEPARATOR_WINDOWS;
             }
             return new ByteArrayInputStream(resultStr.getBytes());
         } catch (ClassNotFoundException e) {
