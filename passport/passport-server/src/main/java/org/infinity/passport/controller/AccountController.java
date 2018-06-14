@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.infinity.passport.domain.Authority;
 import org.infinity.passport.domain.User;
 import org.infinity.passport.domain.UserAuthority;
@@ -33,13 +34,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -60,7 +61,9 @@ import io.swagger.annotations.ApiResponses;
 @Api(tags = "账号管理")
 public class AccountController {
 
-    private static final Logger     LOGGER = LoggerFactory.getLogger(AccountController.class);
+    private static final Logger     LOGGER                = LoggerFactory.getLogger(AccountController.class);
+
+    public static final String      BEARER_AUTHENTICATION = "Bearer ";
 
     @Autowired
     private UserService             userService;
@@ -80,9 +83,21 @@ public class AccountController {
     @Autowired
     private HttpHeaderCreator       httpHeaderCreator;
 
+    @ApiOperation(value = "获取访问令牌", notes = "登录成功返回当前访问令牌", response = String.class)
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取"), @ApiResponse(code = 401, message = "未授权") })
+    @GetMapping("/api/account/access-token")
+    @Timed
+    public ResponseEntity<String> getAccessToken(HttpServletRequest request) {
+        String token = request.getHeader("authorization");
+        if (token != null && token.startsWith(BEARER_AUTHENTICATION)) {
+            return new ResponseEntity<>(StringUtils.substringAfter(token, BEARER_AUTHENTICATION), HttpStatus.OK);
+        }
+        return ResponseEntity.ok().build();
+    }
+
     @ApiOperation(value = "验证当前用户是否已经登录", notes = "登录成功返回当前用户名", response = String.class)
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取"), @ApiResponse(code = 401, message = "未授权") })
-    @RequestMapping(value = "/api/account/authenticate", method = RequestMethod.GET, produces = MediaType.TEXT_PLAIN_VALUE)
+    @GetMapping("/api/account/authenticate")
     @Timed
     public ResponseEntity<String> isAuthenticated(HttpServletRequest request) {
         LOGGER.debug("REST request to check if the current user is authenticated");
@@ -91,7 +106,7 @@ public class AccountController {
 
     @ApiOperation(value = "获取登录的用户,用于SSO客户端调用", notes = "登录成功返回当前用户")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取"), @ApiResponse(code = 401, message = "未授权") })
-    @RequestMapping(value = "/api/account/principal", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/account/principal")
     @Timed
     public ResponseEntity<Principal> getPrincipal(Principal user) {
         LOGGER.debug("REST request to get current user if the user is authenticated");
@@ -100,7 +115,7 @@ public class AccountController {
 
     @ApiOperation("注册新用户")
     @ApiResponses(value = { @ApiResponse(code = 201, message = "成功创建"), @ApiResponse(code = 400, message = "账号已注册") })
-    @RequestMapping(value = "/open-api/account/register", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping("/open-api/account/register")
     @Timed
     public ResponseEntity<Void> registerAccount(
             @ApiParam(value = "用户信息", required = true) @Valid @RequestBody ManagedUserDTO managedUserDTO,
@@ -135,7 +150,7 @@ public class AccountController {
 
     @ApiOperation("根据激活码激活账户")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功激活"), @ApiResponse(code = 400, message = "激活码不存在") })
-    @RequestMapping(value = "/open-api/account/activate/{key:[0-9]+}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/open-api/account/activate/{key:[0-9]+}")
     @Timed
     public ResponseEntity<Void> activateAccount(@ApiParam(value = "激活码", required = true) @PathVariable String key) {
         userService.activateRegistration(key).orElseThrow(() -> new NoDataException(key));
@@ -144,7 +159,7 @@ public class AccountController {
 
     @ApiOperation("获取当前用户信息")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取"), @ApiResponse(code = 400, message = "账号无权限") })
-    @RequestMapping(value = "/api/account/user", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/account/user")
     @Secured({ Authority.USER })
     @Timed
     public ResponseEntity<UserDTO> getCurrentAccount() {
@@ -163,7 +178,7 @@ public class AccountController {
 
     @ApiOperation("获取权限值列表")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取") })
-    @RequestMapping(value = "/api/account/authority-names", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/account/authority-names")
     @Secured({ Authority.USER })
     @Timed
     public ResponseEntity<List<String>> getAuthorityNames(
@@ -176,7 +191,7 @@ public class AccountController {
     @ApiOperation("更新当前用户信息")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功更新"),
             @ApiResponse(code = 400, message = "用户未登录或账号已注册"), @ApiResponse(code = 500, message = "登录用户信息已经不存在") })
-    @RequestMapping(value = "/api/account/user", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping("/api/account/user")
     @Secured({ Authority.USER })
     @Timed
     public ResponseEntity<Void> updateCurrentAccount(
@@ -208,7 +223,7 @@ public class AccountController {
 
     @ApiOperation("修改当前用户的密码")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功更新"), @ApiResponse(code = 400, message = "密码不正确") })
-    @RequestMapping(value = "/api/account/password", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping("/api/account/password")
     @Secured({ Authority.USER })
     @Timed
     public ResponseEntity<Void> changePassword(
@@ -223,7 +238,7 @@ public class AccountController {
 
     @ApiOperation("发送重置密码邮件")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功发送"), @ApiResponse(code = 400, message = "账号不存在") })
-    @RequestMapping(value = "/open-api/account/reset-password/init", method = RequestMethod.POST, produces = MediaType.TEXT_PLAIN_VALUE)
+    @PostMapping("/open-api/account/reset-password/init")
     @Timed
     public ResponseEntity<Void> requestPasswordReset(
             @ApiParam(value = "电子邮件", required = true) @RequestBody String email, HttpServletRequest request) {
@@ -239,7 +254,7 @@ public class AccountController {
     @ApiOperation("重置密码")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功重置"),
             @ApiResponse(code = 400, message = "重置码无效或已过期") })
-    @RequestMapping(value = "/open-api/account/reset-password/finish", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping("/open-api/account/reset-password/finish")
     @Timed
     public ResponseEntity<Void> finishPasswordReset(
             @ApiParam(value = "重置码及新密码信息", required = true) @Valid @RequestBody ResetKeyAndPasswordDTO resetKeyAndPasswordDTO) {
@@ -253,7 +268,7 @@ public class AccountController {
 
     @ApiOperation("上传用户头像")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功上传") })
-    @RequestMapping(value = "/api/account/avatar/upload", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping("/api/account/avatar/upload")
     @Secured({ Authority.USER })
     @Timed
     public ResponseEntity<Void> uploadAvatar(@ApiParam(value = "文件描述", required = true) @RequestPart String description,

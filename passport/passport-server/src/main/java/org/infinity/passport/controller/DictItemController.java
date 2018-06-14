@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -30,13 +29,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -72,12 +72,11 @@ public class DictItemController {
     @ApiOperation("创建数据字典项")
     @ApiResponses(value = { @ApiResponse(code = 201, message = "成功创建"),
             @ApiResponse(code = 400, message = "字典code不存在或相同的字典code和字典项已存在") })
-    @RequestMapping(value = "/api/dict-item/items", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping("/api/dict-item/items")
     @Secured(Authority.DEVELOPER)
     @Timed
     public ResponseEntity<Void> createDictItem(
-            @ApiParam(value = "数据字典项信息", required = true) @Valid @RequestBody DictItemDTO dictItemDTO,
-            HttpServletRequest request) {
+            @ApiParam(value = "数据字典项信息", required = true) @Valid @RequestBody DictItemDTO dictItemDTO) {
         // 判断dictCode是否存在
         if (!dictRepository.findOneByDictCode(dictItemDTO.getDictCode()).isPresent()) {
             throw new FieldValidationException("dicDTO", "dictCode", dictItemDTO.getDictCode(), "error.dict.not.exist",
@@ -102,7 +101,7 @@ public class DictItemController {
 
     @ApiOperation("获取数据字典项分页列表")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取") })
-    @RequestMapping(value = "/api/dict-item/items", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/dict-item/items")
     @Secured(Authority.DEVELOPER)
     @Timed
     public ResponseEntity<List<DictItemDTO>> getDictItems(Pageable pageable,
@@ -123,7 +122,7 @@ public class DictItemController {
 
     @ApiOperation("根据数据字典项ID检索数据字典项信息")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取"), @ApiResponse(code = 400, message = "字典项不存在") })
-    @RequestMapping(value = "/api/dict-item/items/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/dict-item/items/{id}")
     @Secured({ Authority.USER })
     @Timed
     public ResponseEntity<DictItemDTO> getDictItem(
@@ -136,7 +135,7 @@ public class DictItemController {
 
     @ApiOperation("根据数据字典代码检索数据字典项信息")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取") })
-    @RequestMapping(value = "/api/dict-item/dict-code/{dictCode}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/dict-item/dict-code/{dictCode}")
     @Secured({ Authority.USER })
     @Timed
     public ResponseEntity<List<DictItemDTO>> getDictItems(
@@ -154,7 +153,7 @@ public class DictItemController {
 
     @ApiOperation("更新数据字典项信息")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功更新"), @ApiResponse(code = 400, message = "字典项不存在") })
-    @RequestMapping(value = "/api/dict-item/items", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping("/api/dict-item/items")
     @Secured(Authority.DEVELOPER)
     @Timed
     public ResponseEntity<Void> updateDictItem(
@@ -170,7 +169,7 @@ public class DictItemController {
 
     @ApiOperation(value = "根据数据字典编号与字典项编号删除数据字典信息", notes = "数据有可能被其他数据所引用，删除之后可能出现一些问题")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功删除"), @ApiResponse(code = 400, message = "字典项不存在") })
-    @RequestMapping(value = "/api/dict-item/items/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping("/api/dict-item/items/{id}")
     @Secured(Authority.DEVELOPER)
     @Timed
     public ResponseEntity<Void> deleteDictItem(@ApiParam(value = "数据字典项ID", required = true) @PathVariable String id) {

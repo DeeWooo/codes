@@ -9,11 +9,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codahale.metrics.annotation.Timed;
@@ -34,7 +32,7 @@ public class TestController {
     private MailService         mailService;
 
     @ApiOperation("测试审计功能")
-    @RequestMapping(value = "/api/test/user-audit", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/test/user-audit")
     @Secured(Authority.DEVELOPER)
     @Timed
     public ResponseEntity<Void> testAudit() {
@@ -93,7 +91,7 @@ public class TestController {
     }
 
     @ApiOperation("测试发送邮件功能")
-    @RequestMapping(value = "/api/test/email", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/test/email")
     @Secured(Authority.DEVELOPER)
     @Timed
     public ResponseEntity<Void> testEmail() {

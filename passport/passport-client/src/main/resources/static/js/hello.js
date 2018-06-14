@@ -19,10 +19,10 @@ function($rootScope, $http, $location, $route) {
 		return $route.current && route === $route.current.controller;
 	};
 
-	$http.get('api/account/user').then(function(response) {
-		if (response.data.userName) {
+	$http.get('api/account/principal').then(function(response) {
+		if (response.data.name) {
 			$rootScope.authenticated = true;
-			$rootScope.userName = response.data.userName;
+			$rootScope.userName = response.data.name;
 			
 		} else {
 			$rootScope.authenticated = false;
@@ -34,21 +34,21 @@ function($rootScope, $http, $location, $route) {
 	self.credentials = {};
 
 	self.logout = function() {
-		console.log("Post logout to auth server");
+	   console.log("Post logout to auth server");
 	   $.ajax({
-	        url: "http://127.0.0.1:9010/uaa/api/logout",
+	        url: "api/account/logout",
 	        method: "POST",
 	        xhrFields: {
 	            withCredentials: true
         },
-	        success: function(data) {
-	          	console.log("Post logout to UI gateway");  
-				$http.post('logout', {}).finally(function() {
-					$rootScope.authenticated = false;
-					$location.path("/");
-				});
-	        }
-    	})		
+        success: function(data) {
+	    		console.log("Post logout to UI gateway");  
+	    		$http.post('logout', {}).finally(function() {
+	    			$rootScope.authenticated = false;
+	    			$location.path("/");
+	    		});
+            }
+	   })
 	}
 
 }).controller('home', function($http) {

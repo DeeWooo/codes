@@ -1,30 +1,36 @@
 debug: true
 
 spring:
-  aop:
-    proxy-target-class: true
-  devtools:
+    aop:
+        proxy-target-class: true
+    devtools:
         restart:
             enabled: true
 
 security:
-  user:
-    password: none
-  oauth2:
-    client:
-      accessTokenUri: http://127.0.0.1:9010/uaa/oauth/token
-      userAuthorizationUri: http://127.0.0.1:9010/uaa/oauth/authorize
-      clientId: internal_client
-      clientSecret: 7GF-td8-98s-9hq-HU8
-    resource:
-      userInfoUri: http://127.0.0.1:9010/uaa/api/account/principal
+    user:
+        password: none
+    oauth2:
+        client:
+            accessTokenUri: ${zuul.routes.sso-server.url}/oauth/token
+            userAuthorizationUri: ${zuul.routes.sso-server.url}/oauth/authorize
+            clientId: internal_client
+            clientSecret: 7GF-td8-98s-9hq-HU8
+        resource:
+            userInfoUri: ${zuul.routes.sso-server.url}/api/account/principal
+#            jwt:
+#                keyValue: |
+#                  -----BEGIN PUBLIC KEY-----
+#                  MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAiXZqqPG7doSHFFrN+4nk2knzehvfgjB4Uy9EjjU/fJQA0SmwHaUuHpjxxMc+ccG6wmuJHC9CG1Nr288lYAZznSvX/8QATsHoM3J1hxYLQ+FHh8RGLqcSUc1osHm1XDy9V+mlPlbZ2lDHjJTsgx9lprh6W6OPWT+HOlNI334mWLrZHMKW0TFdFgHX7RGrsH4uWM0baEL3AIYXJMHi+h/RVr9Mu8+YvDbtazoh0w90L+etEHxHF6dokMOi1su9cuDluDXIqWGcnQDMIpixjB6K1aZxWL8zm72Jnmn9WBgIXNz+v9JgsIpY+6hpaznu3ahsM/5T55BmWVKTsQIckdbMVwIDAQAB
+#                  -----END PUBLIC KEY-----
 
 zuul:
-  routes:
-    sso-server-account:
-      path: /api/account/**
-      url: http://127.0.0.1:9010/uaa/api/account/
-
+    routes:
+        sso-server:
+            url: http://localhost:9010
+        sso-server-account:
+            path: /api/account/**
+            url: ${zuul.routes.sso-server.url}/api/account/
 logging:
   level:
     org.springframework.security: DEBUG

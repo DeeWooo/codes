@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.util.StopWatch;
 
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.Contact;
@@ -45,10 +44,7 @@ public class SwaggerConfiguration {
 
     @Bean
     public Docket apiDocket() {
-        LOGGER.debug("Starting Swagger API docket");
-        StopWatch watch = new StopWatch();
-        watch.start();
-
+        LOGGER.debug("Building Swagger API docket");
         Docket docket = new Docket(DocumentationType.SWAGGER_2).groupName("api-group").apiInfo(apiInfo())
                 .forCodeGeneration(true);
         if (System.getProperty("specified.uri.scheme.host") != null
@@ -60,17 +56,13 @@ public class SwaggerConfiguration {
                 .directModelSubstitute(java.time.ZonedDateTime.class, Date.class)
                 .directModelSubstitute(java.time.LocalDateTime.class, Date.class).select()
                 .paths(regex(DEFAULT_API_INCLUDE_PATTERN)).build();
-        watch.stop();
-        LOGGER.debug("Started Swagger API docket in {} ms", watch.getTotalTimeMillis());
+        LOGGER.debug("Built Swagger API docket");
         return docket;
     }
 
     @Bean
     public Docket openApiDocket() {
-        LOGGER.debug("Starting Swagger Open API docket");
-        StopWatch watch = new StopWatch();
-        watch.start();
-
+        LOGGER.debug("Building Swagger Open API docket");
         Docket docket = new Docket(DocumentationType.SWAGGER_2).groupName("open-api-group").apiInfo(openApiInfo())
                 .forCodeGeneration(true);
         if (System.getProperty("specified.uri.scheme.host") != null
@@ -83,8 +75,7 @@ public class SwaggerConfiguration {
                 .directModelSubstitute(java.time.ZonedDateTime.class, Date.class)
                 .directModelSubstitute(java.time.LocalDateTime.class, Date.class).select()
                 .paths(regex(DEFAULT_OPEN_API_INCLUDE_PATTERN)).build();
-        watch.stop();
-        LOGGER.debug("Started Swagger Open API docket in {} ms", watch.getTotalTimeMillis());
+        LOGGER.debug("Built Swagger Open API docket");
         return docket;
     }
 

@@ -32,10 +32,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
@@ -69,7 +71,7 @@ public class AdminMenuController {
 
     @ApiOperation("创建菜单")
     @ApiResponses(value = { @ApiResponse(code = 201, message = "成功创建") })
-    @RequestMapping(value = "/api/admin-menu/menus", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping("/api/admin-menu/menus")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<Void> createMenu(
@@ -95,7 +97,7 @@ public class AdminMenuController {
 
     @ApiOperation("获取菜单信息分页列表")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取") })
-    @RequestMapping(value = "/api/admin-menu/menus", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/admin-menu/menus")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<List<AdminMenuDTO>> getMenus(Pageable pageable,
@@ -111,7 +113,7 @@ public class AdminMenuController {
 
     @ApiOperation("根据菜单ID查询菜单")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取"), @ApiResponse(code = 400, message = "菜单不存在") })
-    @RequestMapping(value = "/api/admin-menu/menus/{id}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/admin-menu/menus/{id}")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<AdminMenuDTO> getMenu(@ApiParam(value = "菜单ID", required = true) @PathVariable String id) {
@@ -122,7 +124,7 @@ public class AdminMenuController {
 
     @ApiOperation("查询父类菜单")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取") })
-    @RequestMapping(value = "/api/admin-menu/parent-menus/{appName}/{level:[0-9]+}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/admin-menu/parent-menus/{appName}/{level:[0-9]+}")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<List<AdminMenuDTO>> getAllParentMenu(
@@ -135,7 +137,7 @@ public class AdminMenuController {
 
     @ApiOperation("更新菜单")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功更新"), @ApiResponse(code = 400, message = "菜单不存在") })
-    @RequestMapping(value = "/api/admin-menu/menus", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping("/api/admin-menu/menus")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<Void> updateMenu(
@@ -153,7 +155,7 @@ public class AdminMenuController {
 
     @ApiOperation("根据应用名称和菜单ID删除管理菜单")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功删除"), @ApiResponse(code = 400, message = "菜单不存在") })
-    @RequestMapping(value = "/api/admin-menu/menus/{id}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping("/api/admin-menu/menus/{id}")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<Void> deleteMenu(@ApiParam(value = "菜单ID", required = true) @PathVariable String id) {
@@ -169,7 +171,7 @@ public class AdminMenuController {
 
     @ApiOperation(value = "导入管理菜单", notes = "输入文件格式：每行先后appName,adminMenuName,adminMenuChineseText,level,link,sequence数列，列之间使用tab分隔，行之间使用回车换行")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功导入") })
-    @RequestMapping(value = "/api/admin-menu/menus/import", method = RequestMethod.POST, consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(value = "/api/admin-menu/menus/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<Void> importData(@ApiParam(value = "文件", required = true) @RequestPart MultipartFile file)

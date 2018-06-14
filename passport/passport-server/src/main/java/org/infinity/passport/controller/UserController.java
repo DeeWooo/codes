@@ -38,13 +38,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -87,7 +88,7 @@ public class UserController {
 
     @ApiOperation(value = "创建新用户并发送激活邮件", response = String.class)
     @ApiResponses(value = { @ApiResponse(code = 201, message = "成功创建"), @ApiResponse(code = 400, message = "账号已注册") })
-    @RequestMapping(value = "/api/user/users", method = RequestMethod.POST, produces = MediaType.TEXT_PLAIN_VALUE)
+    @PostMapping("/api/user/users")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<String> createUser(
@@ -125,7 +126,7 @@ public class UserController {
 
     @ApiOperation("获取用户信息分页列表")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取") })
-    @RequestMapping(value = "/api/user/users", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/user/users")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<List<ManagedUserDTO>> getUsers(Pageable pageable,
@@ -142,7 +143,7 @@ public class UserController {
     @ApiOperation("根据用户名检索用户信息")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取"),
             @ApiResponse(code = 400, message = "用户不存在或账号无权限") })
-    @RequestMapping(value = "/api/user/users/{userName:[_'.@a-z0-9-]+}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/user/users/{userName:[_'.@a-z0-9-]+}")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<ManagedUserDTO> getUser(
@@ -162,7 +163,7 @@ public class UserController {
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功更新"), @ApiResponse(code = 400, message = "用户不存在"),
             @ApiResponse(code = 400, message = "账号已注册"), @ApiResponse(code = 400, message = "用户不存在"),
             @ApiResponse(code = 400, message = "已激活用户无法变成未激活状态") })
-    @RequestMapping(value = "/api/user/users", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping("/api/user/users")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<Void> updateUser(
@@ -204,7 +205,7 @@ public class UserController {
 
     @ApiOperation(value = "根据用户名删除用户", notes = "数据有可能被其他数据所引用，删除之后可能出现一些问题")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功删除"), @ApiResponse(code = 400, message = "用户不存在") })
-    @RequestMapping(value = "/api/user/users/{userName:[_'.@a-z0-9-]+}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping("/api/user/users/{userName:[_'.@a-z0-9-]+}")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<Void> deleteUser(@ApiParam(value = "用户名", required = true) @PathVariable String userName) {
@@ -220,7 +221,7 @@ public class UserController {
     @ApiOperation("根据用户名重置密码")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功重置"),
             @ApiResponse(code = 400, message = "用户不存在或账号无权限") })
-    @RequestMapping(value = "/api/user/users/{userName:[_'.@a-z0-9-]+}", method = RequestMethod.PUT, produces = MediaType.TEXT_PLAIN_VALUE)
+    @PutMapping("/api/user/users/{userName:[_'.@a-z0-9-]+}")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<String> resetPassword(

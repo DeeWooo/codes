@@ -1,5 +1,6 @@
 package org.infinity.passport;
 
+import java.io.File;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
@@ -90,7 +91,7 @@ public class PassportLauncher extends WebMvcConfigurerAdapter {
                 org.springframework.util.StringUtils.arrayToCommaDelimitedString(env.getActiveProfiles()),
                 env.getProperty("PID"),
                 env.getProperty("logging.path") + IOUtils.DIR_SEPARATOR + env.getProperty("info.artifact.id") + 
-                IOUtils.DIR_SEPARATOR + env.getProperty("info.artifact.id") + "-" + DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.format(new Date()) + ".log");
+                File.separator + env.getProperty("info.artifact.id") + "-" + DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.format(new Date()) + ".log");
         
         // @formatter:on
         LOGGER.info(serverInfo);

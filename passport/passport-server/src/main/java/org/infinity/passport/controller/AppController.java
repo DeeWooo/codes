@@ -25,13 +25,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.codahale.metrics.annotation.Timed;
@@ -65,7 +66,7 @@ public class AppController {
 
     @ApiOperation("创建应用")
     @ApiResponses(value = { @ApiResponse(code = 201, message = "成功创建") })
-    @RequestMapping(value = "/api/app/apps", method = RequestMethod.POST, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping("/api/app/apps")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<Void> createApp(
@@ -77,7 +78,7 @@ public class AppController {
 
     @ApiOperation("获取应用列表")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取") })
-    @RequestMapping(value = "/api/app/apps", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/app/apps")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<List<AppDTO>> getApps(Pageable pageable) throws URISyntaxException {
@@ -89,7 +90,7 @@ public class AppController {
 
     @ApiOperation("获取所有应用")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取") })
-    @RequestMapping(value = "/api/app/apps/all", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/app/apps/all")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<List<AppDTO>> getAllApps() {
@@ -99,7 +100,7 @@ public class AppController {
 
     @ApiOperation("根据应用名称检索应用信息")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取"), @ApiResponse(code = 400, message = "应用信息不存在") })
-    @RequestMapping(value = "/api/app/apps/{name}", method = RequestMethod.GET, produces = MediaType.APPLICATION_JSON_VALUE)
+    @GetMapping("/api/app/apps/{name}")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<AppDTO> getApp(@ApiParam(value = "应用名称", required = true) @PathVariable String name) {
@@ -113,7 +114,7 @@ public class AppController {
 
     @ApiOperation("更新应用信息")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功更新"), @ApiResponse(code = 400, message = "应用信息不存在") })
-    @RequestMapping(value = "/api/app/apps", method = RequestMethod.PUT, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PutMapping("/api/app/apps")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<Void> updateApp(
@@ -127,7 +128,7 @@ public class AppController {
 
     @ApiOperation(value = "根据应用名称删除应用信息", notes = "数据有可能被其他数据所引用，删除之后可能出现一些问题")
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功删除"), @ApiResponse(code = 400, message = "应用信息不存在") })
-    @RequestMapping(value = "/api/app/apps/{name}", method = RequestMethod.DELETE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @DeleteMapping("/api/app/apps/{name}")
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<Void> deleteAuthority(@ApiParam(value = "应用名称", required = true) @PathVariable String name) {
