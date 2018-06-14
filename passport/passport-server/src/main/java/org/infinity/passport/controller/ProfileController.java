@@ -1,5 +1,6 @@
 package org.infinity.passport.controller;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -43,7 +44,7 @@ public class ProfileController {
             return null;
         }
 
-        List<String> ribbonProfiles = Arrays.asList(displayOnActiveProfiles);
+        List<String> ribbonProfiles = new ArrayList<>(Arrays.asList(displayOnActiveProfiles));
         List<String> springBootProfiles = Arrays.asList(activeProfiles);
         ribbonProfiles.retainAll(springBootProfiles);
 
