@@ -1,5 +1,7 @@
 package org.infinity.passport.exception;
 
+import org.infinity.passport.dto.ParameterizedErrorDTO;
+
 /**
  * Custom, parameterized exception, which can be translated on the client side.
  * For example:

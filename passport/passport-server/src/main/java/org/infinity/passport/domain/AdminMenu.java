@@ -9,6 +9,7 @@ import org.infinity.passport.domain.base.AbstractAuditableDomain;
 import org.infinity.passport.dto.AdminMenuDTO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -27,6 +28,7 @@ public class AdminMenu extends AbstractAuditableDomain implements Serializable {
 
     @NotNull
     @Size(min = 1, max = 20)
+    @Indexed
     private String             appName;
 
     @NotNull
@@ -182,9 +184,9 @@ public class AdminMenu extends AbstractAuditableDomain implements Serializable {
     }
 
     public static AdminMenu fromDTO(AdminMenuDTO dto) {
-        AdminMenu target = new AdminMenu();
-        BeanUtils.copyProperties(dto, target);
-        return target;
+        AdminMenu dest = new AdminMenu();
+        BeanUtils.copyProperties(dto, dest);
+        return dest;
     }
 
 }

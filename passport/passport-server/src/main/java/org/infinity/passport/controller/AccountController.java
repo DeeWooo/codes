@@ -61,9 +61,9 @@ import io.swagger.annotations.ApiResponses;
 @Api(tags = "账号管理")
 public class AccountController {
 
-    private static final Logger     LOGGER                = LoggerFactory.getLogger(AccountController.class);
-
-    public static final String      BEARER_AUTHENTICATION = "Bearer ";
+    private static final Logger     LOGGER = LoggerFactory.getLogger(AccountController.class);
+    
+    public static final String BEARER_AUTHENTICATION = "Bearer ";
 
     @Autowired
     private UserService             userService;
@@ -82,7 +82,7 @@ public class AccountController {
 
     @Autowired
     private HttpHeaderCreator       httpHeaderCreator;
-
+    
     @ApiOperation(value = "获取访问令牌", notes = "登录成功返回当前访问令牌", response = String.class)
     @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取"), @ApiResponse(code = 401, message = "未授权") })
     @GetMapping("/api/account/access-token")
@@ -111,6 +111,25 @@ public class AccountController {
     public ResponseEntity<Principal> getPrincipal(Principal user) {
         LOGGER.debug("REST request to get current user if the user is authenticated");
         return new ResponseEntity<>(user, HttpStatus.OK);
+    }
+
+    @ApiOperation("获取当前用户信息")
+    @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取"), @ApiResponse(code = 400, message = "账号无权限") })
+    @GetMapping("/api/account/user")
+    @Secured({ Authority.USER })
+    @Timed
+    public ResponseEntity<UserDTO> getCurrentAccount() {
+        Optional<User> user = userService.findOneByUserName(SecurityUtils.getCurrentUserName());
+        List<UserAuthority> userAuthorities = userAuthorityRepository.findByUserId(user.get().getId());
+    
+        if (CollectionUtils.isEmpty(userAuthorities)) {
+            throw new NoAuthorityException(SecurityUtils.getCurrentUserName());
+        }
+        Set<String> authorities = userAuthorities.stream().map(UserAuthority::getAuthorityName)
+                .collect(Collectors.toSet());
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("X-User-Signed-In", "true");
+        return new ResponseEntity<UserDTO>(new UserDTO(user.get(), authorities), headers, HttpStatus.OK);
     }
 
     @ApiOperation("注册新用户")
@@ -155,25 +174,6 @@ public class AccountController {
     public ResponseEntity<Void> activateAccount(@ApiParam(value = "激活码", required = true) @PathVariable String key) {
         userService.activateRegistration(key).orElseThrow(() -> new NoDataException(key));
         return new ResponseEntity<>(HttpStatus.OK);
-    }
-
-    @ApiOperation("获取当前用户信息")
-    @ApiResponses(value = { @ApiResponse(code = 200, message = "成功获取"), @ApiResponse(code = 400, message = "账号无权限") })
-    @GetMapping("/api/account/user")
-    @Secured({ Authority.USER })
-    @Timed
-    public ResponseEntity<UserDTO> getCurrentAccount() {
-        Optional<User> user = userService.findOneByUserName(SecurityUtils.getCurrentUserName());
-        List<UserAuthority> userAuthorities = userAuthorityRepository.findByUserId(user.get().getId());
-
-        if (CollectionUtils.isEmpty(userAuthorities)) {
-            throw new NoAuthorityException(SecurityUtils.getCurrentUserName());
-        }
-        Set<String> authorities = userAuthorities.stream().map(UserAuthority::getAuthorityName)
-                .collect(Collectors.toSet());
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("X-User-Signed-In", "true");
-        return new ResponseEntity<UserDTO>(new UserDTO(user.get(), authorities), headers, HttpStatus.OK);
     }
 
     @ApiOperation("获取权限值列表")

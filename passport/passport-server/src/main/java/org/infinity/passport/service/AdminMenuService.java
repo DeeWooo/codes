@@ -1,15 +1,12 @@
 package org.infinity.passport.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.infinity.passport.domain.AdminMenu;
 import org.infinity.passport.dto.AdminManagedMenuDTO;
 import org.infinity.passport.dto.AdminMenuDTO;
 
 public interface AdminMenuService {
-
-    Optional<AdminMenu> findOneByAppNameAndSequence(String appName, Integer sequence);
 
     AdminMenu insert(String appName, String adminMenuName, String adminMenuChineseText, String link, Integer sequence,
             String parentMenuId);

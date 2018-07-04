@@ -1,7 +1,6 @@
 package org.infinity.passport.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.web.cors.CorsConfiguration;
 
 /**
  * Properties specific to Application.
@@ -22,8 +21,6 @@ public class ApplicationProperties {
     private final Swagger              swagger              = new Swagger();
 
     private final Metrics              metrics              = new Metrics();
-
-    private final CorsConfiguration    cors                 = new CorsConfiguration();
 
     private final Dubbo                dubbo                = new Dubbo();
 
@@ -65,10 +62,6 @@ public class ApplicationProperties {
 
     public Metrics getMetrics() {
         return metrics;
-    }
-
-    public CorsConfiguration getCors() {
-        return cors;
     }
 
     public Dubbo getDubbo() {

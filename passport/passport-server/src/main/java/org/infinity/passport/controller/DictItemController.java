@@ -55,16 +55,16 @@ public class DictItemController {
     private static final Logger LOGGER = LoggerFactory.getLogger(DictItemController.class);
 
     @Autowired
-    private DictItemService     dictItemService;
-
-    @Autowired
-    private DictItemRepository  dictItemRepository;
+    private DictRepository      dictRepository;
 
     @Autowired
     private DictService         dictService;
 
     @Autowired
-    private DictRepository      dictRepository;
+    private DictItemRepository  dictItemRepository;
+
+    @Autowired
+    private DictItemService     dictItemService;
 
     @Autowired
     private HttpHeaderCreator   httpHeaderCreator;
@@ -75,25 +75,24 @@ public class DictItemController {
     @PostMapping("/api/dict-item/items")
     @Secured(Authority.DEVELOPER)
     @Timed
-    public ResponseEntity<Void> createDictItem(
-            @ApiParam(value = "数据字典项信息", required = true) @Valid @RequestBody DictItemDTO dictItemDTO) {
+    public ResponseEntity<Void> create(
+            @ApiParam(value = "数据字典项信息", required = true) @Valid @RequestBody DictItemDTO dto) {
+        LOGGER.debug("REST request to create dict item: {}", dto);
         // 判断dictCode是否存在
-        if (!dictRepository.findOneByDictCode(dictItemDTO.getDictCode()).isPresent()) {
-            throw new FieldValidationException("dicDTO", "dictCode", dictItemDTO.getDictCode(), "error.dict.not.exist",
-                    dictItemDTO.getDictCode());
-        }
+        dictRepository.findOneByDictCode(dto.getDictCode())
+                .orElseThrow(() -> new FieldValidationException("dictItemDTO", "dictCode", dto.getDictCode(),
+                        "error.dict.not.exist", dto.getDictCode()));
         // 根据dictItemCode与dictCode查询记录是否存在
-        List<DictItem> existingDictItems = dictItemRepository.findByDictCodeAndDictItemCode(dictItemDTO.getDictCode(),
-                dictItemDTO.getDictItemCode());
+        List<DictItem> existingDictItems = dictItemRepository.findByDictCodeAndDictItemCode(dto.getDictCode(),
+                dto.getDictItemCode());
         if (CollectionUtils.isNotEmpty(existingDictItems)) {
             throw new FieldValidationException("dictItemDTO", "dictCode+dictItemCode",
-                    MessageFormat.format("dictCode: {0}, dictItemCode: {1}", dictItemDTO.getDictCode(),
-                            dictItemDTO.getDictItemCode()),
-                    "error.dict.item.exist", MessageFormat.format("dictCode: {0}, dictItemCode: {1}",
-                            dictItemDTO.getDictCode(), dictItemDTO.getDictItemCode()));
+                    MessageFormat.format("dictCode: {0}, dictItemCode: {1}", dto.getDictCode(), dto.getDictItemCode()),
+                    "error.dict.item.exist",
+                    MessageFormat.format("dictCode: {0}, dictItemCode: {1}", dto.getDictCode(), dto.getDictItemCode()));
         }
-        DictItem dictItem = dictItemService.insert(dictItemDTO.getDictCode(), dictItemDTO.getDictItemCode(),
-                dictItemDTO.getDictItemName(), dictItemDTO.getRemark(), dictItemDTO.getEnabled());
+        DictItem dictItem = dictItemService.insert(dto.getDictCode(), dto.getDictItemCode(), dto.getDictItemName(),
+                dto.getRemark(), dto.getEnabled());
         return ResponseEntity.status(HttpStatus.CREATED).headers(
                 httpHeaderCreator.createSuccessHeader("notification.dict.item.created", dictItem.getDictItemName()))
                 .build();
@@ -111,10 +110,10 @@ public class DictItemController {
         Page<DictItem> dictItems = dictItemService.findByDictCodeAndDictItemNameCombinations(pageable, dictCode,
                 dictItemName);
         Map<String, String> dictCodeDictNameMap = dictService.findDictCodeDictNameMap();
-        List<DictItemDTO> dictItemDTOs = dictItems.getContent().stream().map(dictItem -> {
-            DictItemDTO dto = dictItem.asDTO();
+        List<DictItemDTO> dictItemDTOs = dictItems.getContent().stream().map(entity -> {
+            DictItemDTO dto = entity.asDTO();
             dto.setDictName(dictCodeDictNameMap.get(dto.getDictCode()));
-            return dictItem.asDTO();
+            return entity.asDTO();
         }).collect(Collectors.toList());
         HttpHeaders headers = PaginationUtils.generatePaginationHttpHeaders(dictItems, "/api/dict-item/items");
         return new ResponseEntity<>(dictItemDTOs, headers, HttpStatus.OK);
@@ -128,9 +127,9 @@ public class DictItemController {
     public ResponseEntity<DictItemDTO> getDictItem(
             @ApiParam(value = "数据字典项ID", required = true) @PathVariable String id) {
         LOGGER.debug("REST request to get dict item : {}", id);
-        DictItem dictItem = Optional.ofNullable(dictItemRepository.findOne(id))
+        DictItem entity = Optional.ofNullable(dictItemRepository.findOne(id))
                 .orElseThrow(() -> new NoDataException(id));
-        return new ResponseEntity<>(dictItem.asDTO(), HttpStatus.OK);
+        return new ResponseEntity<>(entity.asDTO(), HttpStatus.OK);
     }
 
     @ApiOperation("根据数据字典代码检索数据字典项信息")
@@ -156,14 +155,15 @@ public class DictItemController {
     @PutMapping("/api/dict-item/items")
     @Secured(Authority.DEVELOPER)
     @Timed
-    public ResponseEntity<Void> updateDictItem(
-            @ApiParam(value = "新的数据字典项信息", required = true) @Valid @RequestBody DictItemDTO dictItemDTO) {
-        Optional.ofNullable(dictItemRepository.findOne(dictItemDTO.getId()))
-                .orElseThrow(() -> new NoDataException(dictItemDTO.getId()));
-        dictItemService.update(dictItemDTO.getId(), dictItemDTO.getDictCode(), dictItemDTO.getDictItemCode(),
-                dictItemDTO.getDictItemName(), dictItemDTO.getRemark(), dictItemDTO.getEnabled());
-        return ResponseEntity.status(HttpStatus.OK).headers(
-                httpHeaderCreator.createSuccessHeader("notification.dict.item.updated", dictItemDTO.getDictItemName()))
+    public ResponseEntity<Void> update(
+            @ApiParam(value = "新的数据字典项信息", required = true) @Valid @RequestBody DictItemDTO dto) {
+        LOGGER.debug("REST request to update dict item: {}", dto);
+        Optional.ofNullable(dictItemRepository.findOne(dto.getId()))
+                .orElseThrow(() -> new NoDataException(dto.getId()));
+        dictItemService.update(dto.getId(), dto.getDictCode(), dto.getDictItemCode(), dto.getDictItemName(),
+                dto.getRemark(), dto.getEnabled());
+        return ResponseEntity.status(HttpStatus.OK)
+                .headers(httpHeaderCreator.createSuccessHeader("notification.dict.item.updated", dto.getDictItemName()))
                 .build();
     }
 
@@ -172,12 +172,11 @@ public class DictItemController {
     @DeleteMapping("/api/dict-item/items/{id}")
     @Secured(Authority.DEVELOPER)
     @Timed
-    public ResponseEntity<Void> deleteDictItem(@ApiParam(value = "数据字典项ID", required = true) @PathVariable String id) {
+    public ResponseEntity<Void> delete(@ApiParam(value = "数据字典项ID", required = true) @PathVariable String id) {
         LOGGER.debug("REST request to delete dict item: {}", id);
         DictItem dictItem = Optional.ofNullable(dictItemRepository.findOne(id))
                 .orElseThrow(() -> new NoDataException(id));
         dictItemRepository.delete(id);
-        LOGGER.info("Deleted dict Item");
         return ResponseEntity.ok().headers(
                 httpHeaderCreator.createSuccessHeader("notification.dict.item.deleted", dictItem.getDictItemName()))
                 .build();

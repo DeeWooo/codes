@@ -417,78 +417,76 @@ function ActivationController ($state, $stateParams, ActivateService) {
 /**
  * ForgotPasswordController
  */
-function ForgotPasswordController ($state, $timeout, PasswordResetInitService) {
+function ForgotPasswordController($state, $timeout, PasswordResetInitService) {
     var vm = this;
 
     vm.pageTitle = $state.current.data.pageTitle;
     vm.requestReset = requestReset;
-    vm.resetAccount = {};
+    vm.email = '';
     vm.isSaving = false;
     vm.success = false;
     vm.errorMsg = null;
 
-    $timeout(function (){angular.element('#email').focus();});
+    $timeout(function () {
+        angular.element('#email').focus();
+    });
 
-    function requestReset () {
+    function requestReset() {
         vm.isSaving = true;
         vm.success = false;
-        PasswordResetInitService.save(vm.resetAccount.email,
-                function (response) {
-                    vm.isSaving = false;
-                    vm.success = true;
-                },
-                function (response) {
-                    vm.isSaving = false;
-                    vm.success = false;
-                    vm.errorMsg = response.error_description;
-                });
+        PasswordResetInitService.save(vm.email,
+            function (response) {
+                vm.isSaving = false;
+                vm.success = true;
+            },
+            function (response) {
+                vm.isSaving = false;
+                vm.success = false;
+                vm.errorMsg = response.error_description;
+            });
     }
 };
 
 /**
  * ResetPasswordController
  */
-function ResetPasswordController ($stateParams, $timeout, PasswordResetFinishService, LoginService) {
+function ResetPasswordController($state, $stateParams, $timeout, PasswordResetFinishService) {
     var vm = this;
 
     vm.pageTitle = $state.current.data.pageTitle;
-    vm.confirmPassword = null;
-    vm.isSaving = false;
-    vm.finishReset = finishReset;
-    vm.login = LoginService.open;
-    vm.resetAccount = {};
+    vm.resetPassword = resetPassword;
+    vm.password = '';
+    vm.confirmPassword = '';
     vm.success = false;
     vm.error = false;
-    vm.passwordNotMatch = false;
+    vm.isSaving = false;
     vm.keyMissing = angular.isUndefined($stateParams.key);
 
-    $timeout(function (){angular.element('#password').focus();});
+    $timeout(function () {
+        angular.element('#password').focus();
+    });
 
-    function finishReset() {
-        vm.passwordNotMatch = false;
+    function resetPassword() {
+        vm.success = false;
         vm.error = false;
-        if (vm.resetAccount.password !== vm.confirmPassword) {
-            vm.passwordNotMatch = true;
-        } else {
-            vm.isSaving = true;
-            PasswordResetFinishService.save({key: $stateParams.key, newPassword: vm.resetAccount.password},
-                    function (response) {
-                       vm.isSaving = false;
-                       vm.success = true;
-                    },
-                    function (response) {
-                        vm.isSaving = false;
-                        vm.success = false;
-                        vm.error = true;
-                    });
-        }
+        vm.isSaving = true;
+        PasswordResetFinishService.save({key: $stateParams.key, newPassword: vm.password},
+            function (response) {
+                vm.success = true;
+                vm.isSaving = false;
+            },
+            function (response) {
+                vm.success = false;
+                vm.error = true;
+                vm.isSaving = false;
+            });
     }
 };
 
 /**
  * PasswordController
  */
-function PasswordController ($state, PasswordService, PrincipalService) {
+function PasswordController($state, PasswordService, PrincipalService) {
     var vm = this;
 
     vm.pageTitle = $state.current.data.pageTitle;
@@ -496,23 +494,23 @@ function PasswordController ($state, PasswordService, PrincipalService) {
     vm.isSaving = false;
     vm.passwordNotMatch = false;
 
-    PrincipalService.identity().then(function(account) {
+    PrincipalService.identity().then(function (account) {
         vm.account = account;
     });
 
-    function save () {
+    function save() {
         if (vm.password !== vm.confirmPassword) {
             vm.passwordNotMatch = true;
         } else {
             vm.passwordNotMatch = false;
             vm.isSaving = true;
             PasswordService.update(vm.password,
-                    function (response) {
-                        vm.isSaving = false;
-                    },
-                    function (response) {
-                        vm.isSaving = false;
-                    });
+                function (response) {
+                    vm.isSaving = false;
+                },
+                function (response) {
+                    vm.isSaving = false;
+                });
         }
     }
 };

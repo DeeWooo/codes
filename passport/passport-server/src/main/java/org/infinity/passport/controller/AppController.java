@@ -69,11 +69,11 @@ public class AppController {
     @PostMapping("/api/app/apps")
     @Secured({ Authority.ADMIN })
     @Timed
-    public ResponseEntity<Void> createApp(
-            @ApiParam(value = "应用信息", required = true) @Valid @RequestBody AppDTO appDTO) {
-        appService.insert(appDTO.getName(), appDTO.getEnabled(), appDTO.getAuthorities());
+    public ResponseEntity<Void> create(@ApiParam(value = "应用信息", required = true) @Valid @RequestBody AppDTO dto) {
+        LOGGER.debug("REST request to create app: {}", dto);
+        appService.insert(dto.getName(), dto.getEnabled(), dto.getAuthorities());
         return ResponseEntity.status(HttpStatus.CREATED)
-                .headers(httpHeaderCreator.createSuccessHeader("notification.app.created", appDTO.getName())).build();
+                .headers(httpHeaderCreator.createSuccessHeader("notification.app.created", dto.getName())).build();
     }
 
     @ApiOperation("获取应用列表")
@@ -83,7 +83,7 @@ public class AppController {
     @Timed
     public ResponseEntity<List<AppDTO>> getApps(Pageable pageable) throws URISyntaxException {
         Page<App> apps = appRepository.findAll(pageable);
-        List<AppDTO> appDTOs = apps.getContent().stream().map(auth -> auth.asDTO()).collect(Collectors.toList());
+        List<AppDTO> appDTOs = apps.getContent().stream().map(entity -> entity.asDTO()).collect(Collectors.toList());
         HttpHeaders headers = PaginationUtils.generatePaginationHttpHeaders(apps, "/api/app/apps");
         return new ResponseEntity<>(appDTOs, headers, HttpStatus.OK);
     }
@@ -117,13 +117,12 @@ public class AppController {
     @PutMapping("/api/app/apps")
     @Secured({ Authority.ADMIN })
     @Timed
-    public ResponseEntity<Void> updateApp(
-            @ApiParam(value = "新的应用信息", required = true) @Valid @RequestBody AppDTO appDTO) {
-        Optional.ofNullable(appRepository.findOne(appDTO.getName()))
-                .orElseThrow(() -> new NoDataException(appDTO.getName()));
-        appService.update(appDTO.getName(), appDTO.getEnabled(), appDTO.getAuthorities());
+    public ResponseEntity<Void> update(@ApiParam(value = "新的应用信息", required = true) @Valid @RequestBody AppDTO dto) {
+        LOGGER.debug("REST request to update app: {}", dto);
+        Optional.ofNullable(appRepository.findOne(dto.getName())).orElseThrow(() -> new NoDataException(dto.getName()));
+        appService.update(dto.getName(), dto.getEnabled(), dto.getAuthorities());
         return ResponseEntity.status(HttpStatus.OK)
-                .headers(httpHeaderCreator.createSuccessHeader("notification.app.updated", appDTO.getName())).build();
+                .headers(httpHeaderCreator.createSuccessHeader("notification.app.updated", dto.getName())).build();
     }
 
     @ApiOperation(value = "根据应用名称删除应用信息", notes = "数据有可能被其他数据所引用，删除之后可能出现一些问题")
@@ -131,12 +130,11 @@ public class AppController {
     @DeleteMapping("/api/app/apps/{name}")
     @Secured({ Authority.ADMIN })
     @Timed
-    public ResponseEntity<Void> deleteAuthority(@ApiParam(value = "应用名称", required = true) @PathVariable String name) {
+    public ResponseEntity<Void> delete(@ApiParam(value = "应用名称", required = true) @PathVariable String name) {
         LOGGER.debug("REST request to delete app: {}", name);
         Optional.ofNullable(appRepository.findOne(name)).orElseThrow(() -> new NoDataException(name));
         appRepository.delete(name);
         appAuthorityRepository.deleteByAppName(name);
-        LOGGER.info("Deleted app");
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(httpHeaderCreator.createSuccessHeader("notification.app.deleted", name)).build();
     }

@@ -30,8 +30,7 @@ public class AjaxLogoutSuccessHandler extends AbstractAuthenticationTargetUrlReq
     @Override
     public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
             throws IOException, ServletException {
-
-        // Request the token
+        // Remove the access token
         String token = request.getHeader("authorization");
         if (token != null && token.startsWith(BEARER_AUTHENTICATION)) {
             final OAuth2AccessToken oAuth2AccessToken = tokenStore

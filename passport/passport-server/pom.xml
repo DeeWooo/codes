@@ -116,6 +116,17 @@
             <version>portable-1.3.4</version>
         </dependency>
         <dependency>
+            <groupId>com.jayway.restassured</groupId>
+            <artifactId>rest-assured</artifactId>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>commons-logging</artifactId>
+                    <groupId>commons-logging</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
             <groupId>com.ryantenney.metrics</groupId>
             <artifactId>metrics-spring</artifactId>
             <version>${metrics-spring.version}</version>
@@ -153,6 +164,10 @@
                     <groupId>org.slf4j</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.mail</groupId>
+            <artifactId>javax.mail</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-collections</groupId>
@@ -343,12 +358,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <exclusions>
-                <exclusion>
-                    <artifactId>spring-boot-starter-tomcat</artifactId>
-                    <groupId>org.springframework.boot</groupId>
-                </exclusion>
-            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
         <!-- Spring Cloud -->
         <!--         <dependency>
@@ -391,6 +404,15 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-jwt</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-messaging</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.springframework.security.oauth</groupId>
@@ -732,6 +754,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <configuration>
+                    <warSourceDirectory>src/main/webapp/</warSourceDirectory>
+                    <packagingExcludes>WEB-INF/lib/tomcat-*.jar</packagingExcludes>
                     <failOnMissingWebXml>false</failOnMissingWebXml>
                     <webResources>
                         <webResource>
@@ -767,51 +791,7 @@
             </properties>
         </profile>
         <profile>
-            <id>dev</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-war-plugin</artifactId>
-                        <configuration>
-                            <warSourceDirectory>src/main/webapp/</warSourceDirectory>
-                            <packagingExcludes>WEB-INF/lib/tomcat-*.jar</packagingExcludes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-            <properties>
-                <!-- log configuration -->
-                <logback.loglevel>DEBUG</logback.loglevel>
-                <mvn.profiles.active>dev</mvn.profiles.active>
-                <server.port>${app.server.port}</server.port>
-                <!-- default Spring profiles -->
-                <spring.profiles.active>dev${profile.no-swagger}${profile.no-aop-logging}</spring.profiles.active>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-tomcat</artifactId>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
             <id>test</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-war-plugin</artifactId>
-                        <configuration>
-                            <warSourceDirectory>src/main/webapp/</warSourceDirectory>
-                            <packagingExcludes>WEB-INF/lib/tomcat-*.jar</packagingExcludes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
             <properties>
                 <!-- log configuration -->
                 <logback.loglevel>DEBUG</logback.loglevel>
@@ -820,56 +800,12 @@
                 <!-- default Spring profiles -->
                 <spring.profiles.active>test${profile.no-swagger}${profile.no-aop-logging}</spring.profiles.active>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-tomcat</artifactId>
-                </dependency>
-            </dependencies>
-        </profile>
-        <profile>
-            <id>demo</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-war-plugin</artifactId>
-                        <configuration>
-                            <warSourceDirectory>src/main/webapp/</warSourceDirectory>
-                            <packagingExcludes>WEB-INF/lib/tomcat-*.jar</packagingExcludes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-            <properties>
-                <!-- log configuration -->
-                <logback.loglevel>DEBUG</logback.loglevel>
-                <mvn.profiles.active>demo</mvn.profiles.active>
-                <server.port>${app.server.port}</server.port>
-                <!-- default Spring profiles -->
-                <spring.profiles.active>demo${profile.no-swagger}${profile.no-aop-logging}</spring.profiles.active>
-            </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-tomcat</artifactId>
-                </dependency>
-            </dependencies>
         </profile>
         <profile>
             <id>prod</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.apache.maven.plugins</groupId>
-                        <artifactId>maven-war-plugin</artifactId>
-                        <configuration>
-                            <warSourceDirectory>src/main/webapp/</warSourceDirectory>
-                            <packagingExcludes>WEB-INF/lib/tomcat-*.jar</packagingExcludes>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
             <properties>
                 <!-- log configuration -->
                 <logback.loglevel>DEBUG</logback.loglevel>
@@ -878,12 +814,6 @@
                 <!-- default Spring profiles -->
                 <spring.profiles.active>prod${profile.no-swagger}${profile.no-aop-logging}</spring.profiles.active>
             </properties>
-            <dependencies>
-                <dependency>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-tomcat</artifactId>
-                </dependency>
-            </dependencies>
         </profile>
     </profiles>
 </project>

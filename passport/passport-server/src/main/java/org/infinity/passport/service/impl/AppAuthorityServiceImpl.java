@@ -16,23 +16,6 @@ public class AppAuthorityServiceImpl implements AppAuthorityService {
     private AppAuthorityRepository appAuthorityRepository;
 
     @Override
-    public AppAuthority insert(String appName, String authorityName) {
-        AppAuthority entity = new AppAuthority(appName, authorityName);
-        return appAuthorityRepository.save(entity);
-    }
-
-    @Override
-    public AppAuthority update(String id, String appName, String authorityName) {
-        AppAuthority entity = appAuthorityRepository.findOne(id);
-        if (entity != null) {
-            entity.setAppName(appName);
-            entity.setAuthorityName(authorityName);
-            appAuthorityRepository.save(entity);
-        }
-        return null;
-    }
-
-    @Override
     public Page<AppAuthority> findByAppNameAndAuthorityNameCombinations(Pageable pageable, String appName,
             String authorityName) {
         if (StringUtils.isEmpty(appName) && StringUtils.isEmpty(authorityName)) {

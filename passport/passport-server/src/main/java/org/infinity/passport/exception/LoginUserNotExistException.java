@@ -1,5 +1,7 @@
 package org.infinity.passport.exception;
 
+import org.infinity.passport.dto.ParameterizedErrorDTO;
+
 public class LoginUserNotExistException extends RuntimeException {
 
     private static final long serialVersionUID = 3389857462571862367L;

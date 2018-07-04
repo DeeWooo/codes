@@ -1,16 +1,23 @@
 package org.infinity.passport.config;
 
-import java.security.KeyPair;
-import java.util.concurrent.TimeUnit;
-
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+import org.infinity.passport.config.oauth2.MongoApprovalStore;
+import org.infinity.passport.config.oauth2.MongoAuthorizationCodeServices;
+import org.infinity.passport.config.oauth2.MongoClientDetailsService;
+import org.infinity.passport.config.oauth2.MongoTokenStore;
 import org.infinity.passport.domain.Authority;
+import org.infinity.passport.repository.OAuth2AccessTokenRepository;
+import org.infinity.passport.repository.OAuth2ApprovalRepository;
+import org.infinity.passport.repository.OAuth2ClientDetailsRepository;
+import org.infinity.passport.repository.OAuth2CodeRepository;
+import org.infinity.passport.repository.OAuth2RefreshTokenRepository;
 import org.infinity.passport.security.AjaxLogoutSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,42 +29,37 @@ import org.springframework.security.oauth2.config.annotation.web.configuration.E
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerEndpointsConfigurer;
 import org.springframework.security.oauth2.config.annotation.web.configurers.AuthorizationServerSecurityConfigurer;
+import org.springframework.security.oauth2.provider.approval.ApprovalStore;
+import org.springframework.security.oauth2.provider.code.AuthorizationCodeServices;
 import org.springframework.security.oauth2.provider.token.TokenStore;
-import org.springframework.security.oauth2.provider.token.store.JwtAccessTokenConverter;
-import org.springframework.security.oauth2.provider.token.store.JwtTokenStore;
-import org.springframework.security.oauth2.provider.token.store.KeyStoreKeyFactory;
 import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
+import org.springframework.web.servlet.view.RedirectView;
 
 /**
  * Refer 
  * http://projects.spring.io/spring-security-oauth/docs/oauth2.html
  * https://stackoverflow.com/questions/33812805/spring-security-oauth2-not-working-without-jwt
+ * https://spring.io/guides/tutorials/spring-security-and-angular-js/#_oauth2_logout_angular_js_and_spring_security_part_ix
+ * https://blog.csdn.net/a82793510/article/details/53509427
+ * https://github.com/spring-guides/tut-spring-security-and-angular-js/issues/121
  */
 @Configuration
 public class UaaConfiguration {
 
-    /**
-     * Apply the token converter (and enhancer) for token store.
-     */
-    @Bean
-    public TokenStore tokenStore() {
-        return new JwtTokenStore(jwtAccessTokenConverter());
-    }
+    public static final String INTERNAL_CLIENT_ID        = "internal_client";
 
-    /**
-     * This bean generates an token enhancer, which manages the exchange
-     * between JWT access tokens and Authentication in both direction.
-     *
-     * @return an access token converter configured with the authorization
-     *         server's public/private keys
-     */
+    public static final String INTERNAL_CLIENT_SECRET    = "7GF-td8-98s-9hq-HU8";
+
+    public static final String THIRD_PARTY_CLIENT_ID     = "third_party_client";
+
+    public static final String THIRD_PARTY_CLIENT_SECRET = "3fP-efd-40g-4Re-fvG";
+
     @Bean
-    public JwtAccessTokenConverter jwtAccessTokenConverter() {
-        JwtAccessTokenConverter converter = new JwtAccessTokenConverter();
-        KeyPair keyPair = new KeyStoreKeyFactory(new ClassPathResource("config/keystore.jks"),
-                "67G-fpf-tg3-pdj-u68".toCharArray()).getKeyPair("key-alias");
-        converter.setKeyPair(keyPair);
-        return converter;
+    public TokenStore tokenStore(OAuth2AccessTokenRepository oAuth2AccessTokenRepository,
+            OAuth2RefreshTokenRepository oAuth2RefreshTokenRepository) {
+        return new MongoTokenStore(oAuth2AccessTokenRepository, oAuth2RefreshTokenRepository);
     }
 
     /**
@@ -71,9 +73,6 @@ public class UaaConfiguration {
         @Autowired
         private AjaxLogoutSuccessHandler ajaxLogoutSuccessHandler;
 
-        // @Autowired
-        // private TokenStore tokenStore;
-
         @Override
         public void configure(HttpSecurity http) throws Exception {
             // @formatter:off
@@ -82,7 +81,7 @@ public class UaaConfiguration {
                 .authenticationEntryPoint((request, response, authException) -> response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Access Denied"))
             .and()
                 .logout()
-                .logoutUrl("/api/logout")
+                .logoutUrl("/api/account/logout")
                 .logoutSuccessHandler(ajaxLogoutSuccessHandler)
             .and()
 //                    .csrf().disable()
@@ -93,7 +92,6 @@ public class UaaConfiguration {
                 .authorizeRequests()
                 // Do not need authentication
                 .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .antMatchers("/swagger-resources/configuration/ui").permitAll()
                 .antMatchers("/management/health").permitAll()
                 // Need authentication
                 .antMatchers("/api/**").authenticated()
@@ -102,11 +100,6 @@ public class UaaConfiguration {
                 .antMatchers("/management/**").hasAuthority(Authority.DEVELOPER);
             // @formatter:on
         }
-
-        //        @Override
-        //        public void configure(ResourceServerSecurityConfigurer resources) throws Exception {
-        //            resources.resourceId("uaa").tokenStore(tokenStore);
-        //        }
     }
 
     /**
@@ -118,47 +111,84 @@ public class UaaConfiguration {
     protected static class AuthorizationServerConfiguration extends AuthorizationServerConfigurerAdapter {
 
         @Autowired
-        private AuthenticationManager   authenticationManager;
+        private AuthenticationManager         authenticationManager;
 
         @Autowired
-        private UserDetailsService      userDetailsService;
+        private TokenStore                    tokenStore;
 
         @Autowired
-        private JwtAccessTokenConverter jwtAccessTokenConverter;
+        private UserDetailsService            userDetailsService;
 
-        /**
-         * Access Token is valid for 5 minutes
-         * Refresh Token is valid for 7 days
-         */
+        @Autowired
+        private OAuth2ApprovalRepository      oAuth2ApprovalRepository;
+
+        @Autowired
+        private OAuth2CodeRepository          oAuth2CodeRepository;
+
+        @Autowired
+        private OAuth2ClientDetailsRepository oAuth2ClientDetailsRepository;
+
         @Override
         public void configure(ClientDetailsServiceConfigurer clients) throws Exception {
+            clients.withClientDetails(new MongoClientDetailsService(oAuth2ClientDetailsRepository));
             // @formatter:off
-            clients.inMemory()
-                .withClient("internal_client")
-                .secret("7GF-td8-98s-9hq-HU8")
-                .scopes("internal-app")
-                .autoApprove(true)
-                .authorizedGrantTypes("password", "authorization_code")
-                .accessTokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(7))
-                .refreshTokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(7))
-                .and()
-                .withClient("third_party_client")
-                .secret("3fP-efd-40g-4Re-fvG")
-                .scopes("openid")
-                .autoApprove(false)
-                .authorizedGrantTypes("implicit", "refresh_token", "password", "authorization_code")
-                .accessTokenValiditySeconds((int) TimeUnit.MINUTES.toSeconds(5))
-                .refreshTokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(7));
+//            clients.inMemory()
+//                .withClient(INTERNAL_CLIENT_ID)
+//                .secret(INTERNAL_CLIENT_SECRET)
+//                .scopes("internal-app")
+//                .autoApprove(true)
+//                .authorizedGrantTypes("password", "authorization_code", "refresh_token") // 如果没有refresh_token的话，获取token时不会返回refresh_token
+//                .accessTokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(7))
+//                .refreshTokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(7))
+//            .and()
+//                .withClient(THIRD_PARTY_CLIENT_ID)
+//                .secret(THIRD_PARTY_CLIENT_SECRET)
+//                .scopes("openid")
+//                .autoApprove(false)
+//                .authorizedGrantTypes("implicit", "refresh_token", "password", "authorization_code")
+//                .accessTokenValiditySeconds((int) TimeUnit.MINUTES.toSeconds(5))
+//                .refreshTokenValiditySeconds((int) TimeUnit.DAYS.toSeconds(7));
             // @formatter:on
+        }
+
+        @Bean
+        public ApprovalStore approvalStore() {
+            return new MongoApprovalStore(oAuth2ApprovalRepository);
+        }
+
+        @Bean
+        protected AuthorizationCodeServices authorizationCodeServices() {
+            return new MongoAuthorizationCodeServices(oAuth2CodeRepository);
         }
 
         @Override
         public void configure(AuthorizationServerEndpointsConfigurer endpoints) throws Exception {
-            // Note: authenticationManager, tokenStore, userDetailsService must
-            // be injected here
+            // Note: authenticationManager, tokenStore, userDetailsService must be injected here
             // 如果没有userDetailsService在使用refresh token刷新access token时报错
-            endpoints.authenticationManager(authenticationManager).accessTokenConverter(jwtAccessTokenConverter)
-                    .userDetailsService(userDetailsService);
+            // @formatter:off
+            endpoints
+                .authenticationManager(authenticationManager)
+                .authorizationCodeServices(authorizationCodeServices())
+                .approvalStore(approvalStore())
+                .tokenStore(tokenStore)
+                .userDetailsService(userDetailsService);
+            // @formatter:on
+            endpoints.addInterceptor(new HandlerInterceptorAdapter() {
+                @Override
+                public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
+                        ModelAndView modelAndView) throws Exception {
+                    if (modelAndView != null && modelAndView.getView() instanceof RedirectView) {
+                        RedirectView redirect = (RedirectView) modelAndView.getView();
+                        String url = redirect.getUrl();
+                        if (url.contains("code=") || url.contains("error=")) {
+                            HttpSession session = request.getSession(false);
+                            if (session != null) {
+                                session.invalidate();
+                            }
+                        }
+                    }
+                }
+            });
         }
 
         @Override

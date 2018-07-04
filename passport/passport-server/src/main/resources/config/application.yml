@@ -56,12 +56,11 @@ spring:
             max-file-size: 30MB
             max-request-size: 30MB
 server: 
-    context-path: /uaa
     # It can be overridden by `--server.port` value passed in the commandline or `-Dserver.port` set in `JAVA_OPTS`
     port: #app.server.port#
     session:
         cookie:
-            http-only: true
+            name: ${info.artifact.name}
 logging:
     config: classpath:config/spring-logback.xml
 security:
@@ -82,13 +81,6 @@ application:
         core-pool-size: 2
         max-pool-size: 50
         queue-capacity: 10000
-    cors: #By default CORS are not enabled. Uncomment to enable.
-        allowed-origins: "*"
-        allowed-methods: GET, PUT, POST, DELETE, OPTIONS
-        allowed-headers: "*"
-        exposed-headers:
-        allow-credentials: true
-        max-age: 1800
     swagger:
         api:
             title: Passport Server API
@@ -109,3 +101,6 @@ application:
         display-on-active-profiles: dev,test,demo,preprod
     user-audit-event:
         enabled: true
+    http-client-connection:
+        global-retry-count: 1
+        global-read-timeout-in-seconds: 3

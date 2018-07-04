@@ -61,10 +61,10 @@ public class AdminMenuController {
     private static final Logger LOGGER = LoggerFactory.getLogger(AdminMenuController.class);
 
     @Autowired
-    private AdminMenuService    adminMenuService;
+    private AdminMenuRepository adminMenuRepository;
 
     @Autowired
-    private AdminMenuRepository adminMenuRepository;
+    private AdminMenuService    adminMenuService;
 
     @Autowired
     private HttpHeaderCreator   httpHeaderCreator;
@@ -74,24 +74,20 @@ public class AdminMenuController {
     @PostMapping("/api/admin-menu/menus")
     @Secured({ Authority.ADMIN })
     @Timed
-    public ResponseEntity<Void> createMenu(
-            @ApiParam(value = "菜单信息", required = true) @Valid @RequestBody AdminMenuDTO adminMenuDTO) {
-        Optional<AdminMenu> result = adminMenuService.findOneByAppNameAndSequence(adminMenuDTO.getAppName(),
-                adminMenuDTO.getSequence());
-        if (result.isPresent()) {
-            throw new FieldValidationException("adminMenuDTO", "appName+sequence",
-                    MessageFormat.format("appName: {0}, sequence: {1}", adminMenuDTO.getAppName(),
-                            adminMenuDTO.getSequence()),
-                    "error.duplication", MessageFormat.format("appName: {0}, sequence: {1}", adminMenuDTO.getAppName(),
-                            adminMenuDTO.getSequence()));
-        }
-
-        adminMenuService.insert(adminMenuDTO.getAppName(), adminMenuDTO.getAdminMenuName(),
-                adminMenuDTO.getAdminMenuChineseText(), adminMenuDTO.getLink(), adminMenuDTO.getSequence(),
-                adminMenuDTO.getParentMenuId());
-        return ResponseEntity
-                .status(HttpStatus.CREATED).headers(httpHeaderCreator
-                        .createSuccessHeader("notification.admin.menu.created", adminMenuDTO.getAdminMenuName()))
+    public ResponseEntity<Void> create(
+            @ApiParam(value = "菜单信息", required = true) @Valid @RequestBody AdminMenuDTO dto) {
+        LOGGER.debug("REST request to create admin menu: {}", dto);
+        adminMenuRepository.findOneByAppNameAndSequence(dto.getAppName(), dto.getSequence())
+                .ifPresent((existingEntity) -> {
+                    throw new FieldValidationException("adminMenuDTO", "appName+sequence",
+                            MessageFormat.format("appName: {0}, sequence: {1}", dto.getAppName(), dto.getSequence()),
+                            "error.duplication",
+                            MessageFormat.format("appName: {0}, sequence: {1}", dto.getAppName(), dto.getSequence()));
+                });
+        adminMenuService.insert(dto.getAppName(), dto.getAdminMenuName(), dto.getAdminMenuChineseText(), dto.getLink(),
+                dto.getSequence(), dto.getParentMenuId());
+        return ResponseEntity.status(HttpStatus.CREATED).headers(
+                httpHeaderCreator.createSuccessHeader("notification.admin.menu.created", dto.getAdminMenuName()))
                 .build();
     }
 
@@ -105,7 +101,7 @@ public class AdminMenuController {
             throws URISyntaxException {
         Page<AdminMenu> adminMenus = StringUtils.isEmpty(appName) ? adminMenuRepository.findAll(pageable)
                 : adminMenuRepository.findByAppName(pageable, appName);
-        List<AdminMenuDTO> adminMenuDTOs = adminMenus.getContent().stream().map(adminMenu -> adminMenu.asDTO())
+        List<AdminMenuDTO> adminMenuDTOs = adminMenus.getContent().stream().map(entity -> entity.asDTO())
                 .collect(Collectors.toList());
         HttpHeaders headers = PaginationUtils.generatePaginationHttpHeaders(adminMenus, "/api/admin-menu/menus");
         return new ResponseEntity<>(adminMenuDTOs, headers, HttpStatus.OK);
@@ -117,9 +113,9 @@ public class AdminMenuController {
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<AdminMenuDTO> getMenu(@ApiParam(value = "菜单ID", required = true) @PathVariable String id) {
-        AdminMenu adminMenu = Optional.ofNullable(adminMenuRepository.findOne(id))
+        AdminMenu entity = Optional.ofNullable(adminMenuRepository.findOne(id))
                 .orElseThrow(() -> new NoDataException(id));
-        return new ResponseEntity<>(adminMenu.asDTO(), HttpStatus.OK);
+        return new ResponseEntity<>(entity.asDTO(), HttpStatus.OK);
     }
 
     @ApiOperation("查询父类菜单")
@@ -130,9 +126,9 @@ public class AdminMenuController {
     public ResponseEntity<List<AdminMenuDTO>> getAllParentMenu(
             @ApiParam(value = "应用名称", required = true) @PathVariable String appName,
             @ApiParam(value = "菜单级别", required = true) @PathVariable Integer level) {
-        List<AdminMenuDTO> adminMenuDTOs = adminMenuRepository.findByAppNameAndLevel(appName, level).stream()
+        List<AdminMenuDTO> dtos = adminMenuRepository.findByAppNameAndLevel(appName, level).stream()
                 .map(adminMenu -> adminMenu.asDTO()).collect(Collectors.toList());
-        return new ResponseEntity<List<AdminMenuDTO>>(adminMenuDTOs, HttpStatus.OK);
+        return new ResponseEntity<List<AdminMenuDTO>>(dtos, HttpStatus.OK);
     }
 
     @ApiOperation("更新菜单")
@@ -140,17 +136,17 @@ public class AdminMenuController {
     @PutMapping("/api/admin-menu/menus")
     @Secured({ Authority.ADMIN })
     @Timed
-    public ResponseEntity<Void> updateMenu(
-            @ApiParam(value = "新的菜单信息", required = true) @Valid @RequestBody AdminMenuDTO adminMenuDTO) {
-        Optional.ofNullable(adminMenuRepository.findOne(adminMenuDTO.getId()))
-                .orElseThrow(() -> new NoDataException(adminMenuDTO.getId()));
+    public ResponseEntity<Void> update(
+            @ApiParam(value = "新的菜单信息", required = true) @Valid @RequestBody AdminMenuDTO dto) {
+        LOGGER.debug("REST request to update admin menu: {}", dto);
+        Optional.ofNullable(adminMenuRepository.findOne(dto.getId()))
+                .orElseThrow(() -> new NoDataException(dto.getId()));
 
-        adminMenuService.update(adminMenuDTO.getId(), adminMenuDTO.getAppName(), adminMenuDTO.getAdminMenuName(),
-                adminMenuDTO.getAdminMenuChineseText(), adminMenuDTO.getLevel(), adminMenuDTO.getLink(),
-                adminMenuDTO.getSequence(), adminMenuDTO.getParentMenuId());
-        LOGGER.debug("updated admin menu : {}");
-        return ResponseEntity.status(HttpStatus.OK).headers(httpHeaderCreator
-                .createSuccessHeader("notification.admin.menu.updated", adminMenuDTO.getAdminMenuName())).build();
+        adminMenuService.update(dto.getId(), dto.getAppName(), dto.getAdminMenuName(), dto.getAdminMenuChineseText(),
+                dto.getLevel(), dto.getLink(), dto.getSequence(), dto.getParentMenuId());
+        return ResponseEntity.status(HttpStatus.OK).headers(
+                httpHeaderCreator.createSuccessHeader("notification.admin.menu.updated", dto.getAdminMenuName()))
+                .build();
     }
 
     @ApiOperation("根据应用名称和菜单ID删除管理菜单")
@@ -158,12 +154,11 @@ public class AdminMenuController {
     @DeleteMapping("/api/admin-menu/menus/{id}")
     @Secured({ Authority.ADMIN })
     @Timed
-    public ResponseEntity<Void> deleteMenu(@ApiParam(value = "菜单ID", required = true) @PathVariable String id) {
-        LOGGER.debug("REST request to delete menu : {}", id);
+    public ResponseEntity<Void> delete(@ApiParam(value = "菜单ID", required = true) @PathVariable String id) {
+        LOGGER.debug("REST request to delete admin menu: {}", id);
         AdminMenu adminMenu = Optional.ofNullable(adminMenuRepository.findOne(id))
                 .orElseThrow(() -> new NoDataException(id));
         adminMenuRepository.delete(id);
-        LOGGER.debug("delete admin menu");
         return ResponseEntity.status(HttpStatus.OK).headers(
                 httpHeaderCreator.createSuccessHeader("notification.admin.menu.deleted", adminMenu.getAdminMenuName()))
                 .build();

@@ -5,6 +5,7 @@ import java.io.Serializable;
 import javax.validation.constraints.Size;
 
 import org.infinity.passport.dto.AppAuthorityDTO;
+import org.springframework.beans.BeanUtils;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -29,20 +30,7 @@ public class AppAuthority implements Serializable {
         super();
     }
 
-    /**
-     * Constructor for creating operation
-     * @param appName
-     * @param authorityName
-     */
     public AppAuthority(String appName, String authorityName) {
-        super();
-        this.appName = appName;
-        this.authorityName = authorityName;
-    }
-
-    public AppAuthority(String id, String appName, String authorityName) {
-        super();
-        this.id = id;
         this.appName = appName;
         this.authorityName = authorityName;
     }
@@ -101,11 +89,14 @@ public class AppAuthority implements Serializable {
     }
 
     public AppAuthorityDTO asDTO() {
-        return new AppAuthorityDTO(this.getId(), this.getAppName(), this.getAuthorityName());
+        AppAuthorityDTO dest = new AppAuthorityDTO();
+        BeanUtils.copyProperties(this, dest);
+        return dest;
     }
 
     public static AppAuthority fromDTO(AppAuthorityDTO dto) {
-        AppAuthority target = new AppAuthority(dto.getId(), dto.getAppName(), dto.getAuthorityName());
-        return target;
+        AppAuthority dest = new AppAuthority();
+        BeanUtils.copyProperties(dto, dest);
+        return dest;
     }
 }

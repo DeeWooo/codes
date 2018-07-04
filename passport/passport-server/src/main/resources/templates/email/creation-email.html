@@ -12,7 +12,7 @@
             Your account has been created, please click on the URL below to activate it:
         </p>
         <p>
-          <a th:href="@{|${baseUrl}/#/reset/finish?key=${user.resetKey}|}"
+          <a th:href="@{|${baseUrl}/#/reset-password?key=${user.resetKey}|}"
              th:text="|${user.userName}|">login</a>
         </p>
         <p>

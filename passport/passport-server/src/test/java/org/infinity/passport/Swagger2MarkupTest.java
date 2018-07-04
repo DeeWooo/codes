@@ -3,6 +3,7 @@ package org.infinity.passport;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import org.infinity.passport.config.ApplicationConstants;
 import org.infinity.passport.utils.ApplicationPropertiesUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +23,7 @@ import springfox.documentation.staticdocs.Swagger2MarkupResultHandler;
 @WebAppConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest(classes = PassportLauncher.class)
-@ActiveProfiles("demo")
+@ActiveProfiles(ApplicationConstants.SPRING_PROFILE_PRODUCTION)
 public class Swagger2MarkupTest {
 
     @Autowired

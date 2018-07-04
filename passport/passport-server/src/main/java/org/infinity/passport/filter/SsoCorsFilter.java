@@ -23,30 +23,23 @@ public class SsoCorsFilter implements Filter {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SsoCorsFilter.class);
 
-    public SsoCorsFilter() {
-    }
-
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
             throws IOException, ServletException {
         HttpServletResponse response = (HttpServletResponse) res;
         HttpServletRequest request = (HttpServletRequest) req;
         LOGGER.debug("Access URL: {}", request.getRequestURI());
-        if (request.getRequestURI().endsWith("oauth/authorize") || request.getRequestURI().endsWith("login")
-                || request.getRequestURI().endsWith("logout")) {
-            response.setHeader("Access-Control-Allow-Origin", request.getHeader("origin"));
-            response.setHeader("Access-Control-Allow-Credentials", "true");
-            response.setHeader("Access-Control-Allow-Methods", "GET, PUT, POST, DELETE, OPTIONS");
-            response.setHeader("Access-Control-Allow-Headers",
-                    "Content-Type, X-XSRF-TOKEN, Cookie, Host, Origin, Referer, Accept, Upgrade-Insecure-Requests, "
-                            + "X-Forwarded-For, X-Forwarded-Port, X-Forwarded-Proto, X-Requested-With");
-        }
 
-        // if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
-        // response.setStatus(HttpServletResponse.SC_OK);
-        // } else {
-        chain.doFilter(req, res);
-        // }
+        response.setHeader("Access-Control-Allow-Origin", request.getHeader("origin"));
+        response.setHeader("Access-Control-Allow-Methods", "POST");
+        response.setHeader("Access-Control-Allow-Headers", "Content-Type, X-Requested-With, X-XSRF-TOKEN");
+        response.setHeader("Access-Control-Allow-Credentials", "true");
+
+        if ("OPTIONS".equalsIgnoreCase(((HttpServletRequest) req).getMethod())) {
+            response.setStatus(HttpServletResponse.SC_OK);
+        } else {
+            chain.doFilter(req, res);
+        }
     }
 
     @Override

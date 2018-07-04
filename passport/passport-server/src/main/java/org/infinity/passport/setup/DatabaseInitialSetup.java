@@ -1,10 +1,13 @@
 package org.infinity.passport.setup;
 
+import java.util.Arrays;
+
 import org.infinity.passport.domain.AdminMenu;
 import org.infinity.passport.domain.App;
 import org.infinity.passport.domain.AppAuthority;
 import org.infinity.passport.domain.Authority;
 import org.infinity.passport.domain.AuthorityAdminMenu;
+import org.infinity.passport.domain.OAuth2AuthenticationClientDetails;
 import org.infinity.passport.domain.User;
 import org.infinity.passport.domain.UserAuthority;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -177,5 +180,19 @@ public class DatabaseInitialSetup {
 
         AuthorityAdminMenu authorityAdminMenu8 = new AuthorityAdminMenu(Authority.ADMIN, adminMenu8.getId());
         mongoTemplate.save(authorityAdminMenu8);
+    }
+
+    @ChangeSet(order = "05", author = "Louis", id = "addOAuth2AuthenticationClientDetails")
+    public void addOAuth2AuthenticationClientDetails(MongoTemplate mongoTemplate) {
+        OAuth2AuthenticationClientDetails oAuth2AuthenticationClientDetails = new OAuth2AuthenticationClientDetails();
+        oAuth2AuthenticationClientDetails.setClientId("internal_client");
+        oAuth2AuthenticationClientDetails.setClientSecret("7GF-td8-98s-9hq-HU8");
+        oAuth2AuthenticationClientDetails.setScope(Arrays.asList("internal-app"));
+        oAuth2AuthenticationClientDetails.setAutoApproveScopes(Arrays.asList("true"));
+        oAuth2AuthenticationClientDetails
+                .setAuthorizedGrantTypes(Arrays.asList("password", "authorization_code", "refresh_token"));
+        oAuth2AuthenticationClientDetails.setAccessTokenValiditySeconds(604800);
+        oAuth2AuthenticationClientDetails.setRefreshTokenValiditySeconds(604800);
+        mongoTemplate.save(oAuth2AuthenticationClientDetails);
     }
 }

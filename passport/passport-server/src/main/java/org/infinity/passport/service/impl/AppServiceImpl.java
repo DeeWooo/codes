@@ -30,11 +30,9 @@ public class AppServiceImpl implements AppService {
         App newApp = new App(name, enabled);
         appRepository.save(newApp);
 
-        if (CollectionUtils.isNotEmpty(authorityNames)) {
-            authorityNames.forEach(authorityName -> {
-                appAuthorityRepository.insert(new AppAuthority(newApp.getName(), authorityName));
-            });
-        }
+        authorityNames.stream().forEach(authorityName -> {
+            appAuthorityRepository.insert(new AppAuthority(newApp.getName(), authorityName));
+        });
 
         LOGGER.debug("Created Information for app: {}", newApp);
         return newApp;

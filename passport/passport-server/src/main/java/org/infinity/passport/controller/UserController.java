@@ -67,13 +67,13 @@ public class UserController {
     private static final Logger      LOGGER           = LoggerFactory.getLogger(UserController.class);
 
     @Autowired
-    private UserService              userService;
-
-    @Autowired
     private UserRepository           userRepository;
 
     @Autowired
     private UserAuthorityRepository  userAuthorityRepository;
+
+    @Autowired
+    private UserService              userService;
 
     @Autowired
     private MailService              mailService;
@@ -91,26 +91,28 @@ public class UserController {
     @PostMapping("/api/user/users")
     @Secured({ Authority.ADMIN })
     @Timed
-    public ResponseEntity<String> createUser(
-            @ApiParam(value = "用户信息", required = true) @Valid @RequestBody UserDTO userDTO,
+    public ResponseEntity<String> create(@ApiParam(value = "用户信息", required = true) @Valid @RequestBody UserDTO dto,
             HttpServletRequest request) {
-        if (userService.findOneByUserName(userDTO.getUserName()).isPresent()) {
-            throw new FieldValidationException("userDTO", "userName", userDTO.getUserName(),
-                    "error.registration.user.exists", userDTO.getUserName());
-        }
-        if (userService.findOneByEmail(userDTO.getEmail()).isPresent()) {
-            throw new FieldValidationException("userDTO", "email", userDTO.getEmail(),
-                    "error.registration.email.exists", userDTO.getEmail());
-        }
-        if (userService.findOneByMobileNo(userDTO.getMobileNo()).isPresent()) {
-            throw new FieldValidationException("userDTO", "mobileNo", userDTO.getMobileNo(),
-                    "error.registration.mobile.exists", userDTO.getMobileNo());
-        }
+        LOGGER.debug("REST request to create user: {}", dto);
+        userService.findOneByUserName(dto.getUserName()).ifPresent((existingEntity) -> {
+            throw new FieldValidationException("userDTO", "userName", dto.getUserName(),
+                    "error.registration.user.exists", dto.getUserName());
+        });
 
-        User newUser = userService.insert(userDTO.getUserName(), DEFAULT_PASSWORD, userDTO.getFirstName(),
-                userDTO.getLastName(), userDTO.getEmail().toLowerCase(), userDTO.getMobileNo(),
-                RandomUtils.generateActivationKey(), userDTO.getActivated(), userDTO.getAvatarImageUrl(),
-                userDTO.getEnabled(), RandomUtils.generateResetKey(), Instant.now(), userDTO.getAuthorities());
+        userService.findOneByEmail(dto.getEmail()).ifPresent((existingEntity) -> {
+            throw new FieldValidationException("userDTO", "email", dto.getEmail(), "error.registration.email.exists",
+                    dto.getEmail());
+        });
+
+        userService.findOneByMobileNo(dto.getMobileNo()).ifPresent((existingEntity) -> {
+            throw new FieldValidationException("userDTO", "mobileNo", dto.getMobileNo(),
+                    "error.registration.mobile.exists", dto.getMobileNo());
+        });
+
+        User newUser = userService.insert(dto.getUserName(), DEFAULT_PASSWORD, dto.getFirstName(), dto.getLastName(),
+                dto.getEmail().toLowerCase(), dto.getMobileNo(), RandomUtils.generateActivationKey(),
+                dto.getActivated(), dto.getAvatarImageUrl(), dto.getEnabled(), RandomUtils.generateResetKey(),
+                Instant.now(), dto.getAuthorities());
         String baseUrl = request.getScheme() + // "http"
                 "://" + // "://"
                 request.getServerName() + // "myhost"
@@ -119,7 +121,7 @@ public class UserController {
                 request.getContextPath(); // "/myContextPath" or "" if
         // deployed in root context
         mailService.sendCreationEmail(newUser, baseUrl);
-        HttpHeaders headers = httpHeaderCreator.createSuccessHeader("notification.user.created", userDTO.getUserName(),
+        HttpHeaders headers = httpHeaderCreator.createSuccessHeader("notification.user.created", dto.getUserName(),
                 DEFAULT_PASSWORD);
         return new ResponseEntity<>(DEFAULT_PASSWORD, headers, HttpStatus.OK);
     }
@@ -134,7 +136,7 @@ public class UserController {
             throws URISyntaxException {
         Page<User> users = StringUtils.isEmpty(login) ? userRepository.findAll(pageable)
                 : userService.findByLogin(pageable, login);
-        List<ManagedUserDTO> userDTOs = users.getContent().stream().map(user -> new ManagedUserDTO(user, null))
+        List<ManagedUserDTO> userDTOs = users.getContent().stream().map(entity -> new ManagedUserDTO(entity, null))
                 .collect(Collectors.toList());
         HttpHeaders headers = PaginationUtils.generatePaginationHttpHeaders(users, "/api/user/users");
         return new ResponseEntity<>(userDTOs, headers, HttpStatus.OK);
@@ -148,15 +150,12 @@ public class UserController {
     @Timed
     public ResponseEntity<ManagedUserDTO> getUser(
             @ApiParam(value = "用户名", required = true) @PathVariable String userName) {
-        LOGGER.debug("REST request to get User : {}", userName);
-        User user = userService.findOneByUserName(userName).orElseThrow(() -> new NoDataException(userName));
-        List<UserAuthority> userAuthorities = userAuthorityRepository.findByUserId(user.getId());
-        if (userAuthorities == null) {
-            throw new NoAuthorityException(userName);
-        }
+        User entity = userService.findOneByUserName(userName).orElseThrow(() -> new NoDataException(userName));
+        List<UserAuthority> userAuthorities = Optional.ofNullable(userAuthorityRepository.findByUserId(entity.getId()))
+                .orElseThrow(() -> new NoAuthorityException(userName));
         Set<String> authorities = userAuthorities.stream().map(item -> item.getAuthorityName())
                 .collect(Collectors.toSet());
-        return new ResponseEntity<>(new ManagedUserDTO(user, authorities), HttpStatus.OK);
+        return new ResponseEntity<>(new ManagedUserDTO(entity, authorities), HttpStatus.OK);
     }
 
     @ApiOperation("更新用户信息")
@@ -166,41 +165,40 @@ public class UserController {
     @PutMapping("/api/user/users")
     @Secured({ Authority.ADMIN })
     @Timed
-    public ResponseEntity<Void> updateUser(
-            @ApiParam(value = "新的用户信息", required = true) @Valid @RequestBody UserDTO userDTO,
+    public ResponseEntity<Void> update(@ApiParam(value = "新的用户信息", required = true) @Valid @RequestBody UserDTO dto,
             HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        Optional<User> existingUser = userService.findOneByUserName(userDTO.getUserName());
+        LOGGER.debug("REST request to update user: {}", dto);
+        Optional<User> existingUser = userService.findOneByUserName(dto.getUserName());
 
         if (!existingUser.isPresent()) {
-            throw new NoDataException(userDTO.getUserName());
+            throw new NoDataException(dto.getUserName());
         }
-        existingUser = userService.findOneByEmail(userDTO.getEmail());
-        if (existingUser.isPresent() && (!existingUser.get().getUserName().equalsIgnoreCase(userDTO.getUserName()))) {
-            throw new FieldValidationException("userDTO", "email", userDTO.getEmail(),
-                    "error.registration.email.exists", userDTO.getEmail());
+        existingUser = userService.findOneByEmail(dto.getEmail());
+        if (existingUser.isPresent() && (!existingUser.get().getUserName().equalsIgnoreCase(dto.getUserName()))) {
+            throw new FieldValidationException("userDTO", "email", dto.getEmail(), "error.registration.email.exists",
+                    dto.getEmail());
         }
-        existingUser = userService.findOneByMobileNo(userDTO.getMobileNo());
-        if (existingUser.isPresent() && (!existingUser.get().getUserName().equalsIgnoreCase(userDTO.getUserName()))) {
-            throw new FieldValidationException("userDTO", "mobileNo", userDTO.getMobileNo(),
-                    "error.registration.mobile.exists", userDTO.getMobileNo());
+        existingUser = userService.findOneByMobileNo(dto.getMobileNo());
+        if (existingUser.isPresent() && (!existingUser.get().getUserName().equalsIgnoreCase(dto.getUserName()))) {
+            throw new FieldValidationException("userDTO", "mobileNo", dto.getMobileNo(),
+                    "error.registration.mobile.exists", dto.getMobileNo());
         }
-        if (existingUser.isPresent() && !Boolean.TRUE.equals(userDTO.getActivated())
+        if (existingUser.isPresent() && !Boolean.TRUE.equals(dto.getActivated())
                 && Boolean.TRUE.equals(existingUser.get().getActivated())) {
             throw new FieldValidationException("userDTO", "activated", "error.change.active.to.inactive");
         }
 
-        userService.update(userDTO.getUserName().toLowerCase(), userDTO.getFirstName(), userDTO.getLastName(),
-                userDTO.getEmail().toLowerCase(), userDTO.getMobileNo(), SecurityUtils.getCurrentUserName(),
-                userDTO.getActivated(), userDTO.getAvatarImageUrl(), userDTO.getEnabled(), userDTO.getAuthorities());
+        userService.update(dto.getUserName().toLowerCase(), dto.getFirstName(), dto.getLastName(),
+                dto.getEmail().toLowerCase(), dto.getMobileNo(), SecurityUtils.getCurrentUserName(), dto.getActivated(),
+                dto.getAvatarImageUrl(), dto.getEnabled(), dto.getAuthorities());
         //
-        if (userDTO.getUserName().equals(SecurityUtils.getCurrentUserName())) {
+        if (dto.getUserName().equals(SecurityUtils.getCurrentUserName())) {
             // Remove access token from Redis if authorities of current user
             // were changed
             ajaxLogoutSuccessHandler.onLogoutSuccess(request, response, null);
         }
         return ResponseEntity.status(HttpStatus.OK)
-                .headers(httpHeaderCreator.createSuccessHeader("notification.user.updated", userDTO.getUserName()))
-                .build();
+                .headers(httpHeaderCreator.createSuccessHeader("notification.user.updated", dto.getUserName())).build();
     }
 
     @ApiOperation(value = "根据用户名删除用户", notes = "数据有可能被其他数据所引用，删除之后可能出现一些问题")
@@ -208,12 +206,11 @@ public class UserController {
     @DeleteMapping("/api/user/users/{userName:[_'.@a-z0-9-]+}")
     @Secured({ Authority.ADMIN })
     @Timed
-    public ResponseEntity<Void> deleteUser(@ApiParam(value = "用户名", required = true) @PathVariable String userName) {
-        LOGGER.debug("REST request to delete User: {}", userName);
+    public ResponseEntity<Void> delete(@ApiParam(value = "用户名", required = true) @PathVariable String userName) {
+        LOGGER.debug("REST request to delete user: {}", userName);
         User user = userService.findOneByUserName(userName).orElseThrow(() -> new NoDataException(userName));
         userRepository.delete(user.getId());
         userAuthorityRepository.deleteByUserId(user.getId());
-        LOGGER.info("Deleted user");
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(httpHeaderCreator.createSuccessHeader("notification.user.deleted", userName)).build();
     }
@@ -226,7 +223,7 @@ public class UserController {
     @Timed
     public ResponseEntity<String> resetPassword(
             @ApiParam(value = "用户名", required = true) @PathVariable String userName) {
-        LOGGER.debug("REST reset the password of User : {}", userName);
+        LOGGER.debug("REST reset the password of user: {}", userName);
         userService.changePassword(userName, DEFAULT_PASSWORD);
         HttpHeaders headers = httpHeaderCreator.createSuccessHeader("notification.password.reset.to.default",
                 DEFAULT_PASSWORD);

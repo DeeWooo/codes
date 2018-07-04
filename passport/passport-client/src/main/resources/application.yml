@@ -27,7 +27,7 @@ security:
 zuul:
     routes:
         sso-server:
-            url: http://localhost:9010
+            url: http://passport2.deepbrain.ai
         sso-server-account:
             path: /api/account/**
             url: ${zuul.routes.sso-server.url}/api/account/

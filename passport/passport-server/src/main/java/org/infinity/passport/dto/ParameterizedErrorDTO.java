@@ -1,4 +1,4 @@
-package org.infinity.passport.exception;
+package org.infinity.passport.dto;
 
 import java.io.Serializable;
 

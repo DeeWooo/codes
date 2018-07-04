@@ -5,12 +5,12 @@ import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.infinity.passport.config.ApplicationConstants;
+import org.infinity.passport.dto.ParameterizedErrorDTO;
 import org.infinity.passport.exception.CustomParameterizedException;
 import org.infinity.passport.exception.FieldValidationException;
 import org.infinity.passport.exception.LoginUserNotExistException;
 import org.infinity.passport.exception.NoAuthorityException;
 import org.infinity.passport.exception.NoDataException;
-import org.infinity.passport.exception.ParameterizedErrorDTO;
 import org.infinity.passport.utils.HttpHeaderCreator;
 import org.infinity.passport.utils.LogUtils;
 import org.slf4j.Logger;
