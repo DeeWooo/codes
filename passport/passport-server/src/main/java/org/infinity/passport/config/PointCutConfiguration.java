@@ -5,8 +5,8 @@ import java.lang.reflect.Method;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.infinity.passport.annotation.ExecutionSwitch;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
@@ -22,12 +22,7 @@ public class PointCutConfiguration {
     @Autowired
     private Environment env;
 
-    @Pointcut("execution(* " + ApplicationConstants.BASE_PACKAGE
-            + ".repository..CustomAuditEventRepository.add(..))")
-    public void switchPointcut() {
-    }
-
-    @Around("switchPointcut()")
+    @Around(ExecutionSwitch.AROUND)
     public void switchAround(ProceedingJoinPoint joinPoint) throws Throwable {
         Method proxyMethod = ((MethodSignature) joinPoint.getSignature()).getMethod();
         Method soruceMethod = joinPoint.getTarget().getClass().getMethod(proxyMethod.getName(),

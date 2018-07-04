@@ -3,8 +3,8 @@ package org.infinity.passport.repository;
 import java.util.Date;
 import java.util.List;
 
+import org.infinity.passport.annotation.ExecutionSwitch;
 import org.infinity.passport.component.AuditEventConverter;
-import org.infinity.passport.config.ExecutionSwitch;
 import org.infinity.passport.domain.Authority;
 import org.infinity.passport.domain.PersistentAuditEvent;
 import org.springframework.boot.actuate.audit.AuditEvent;
