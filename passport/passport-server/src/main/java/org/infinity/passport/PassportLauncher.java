@@ -8,7 +8,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateFormatUtils;
@@ -83,14 +82,14 @@ public class PassportLauncher extends WebMvcConfigurerAdapter {
                 env.getProperty("spring.application.name"),
                 StringUtils.isEmpty(env.getProperty("server.ssl.key-store")) ? "http" : "https",
                 env.getProperty("server.port"),
-                StringUtils.isEmpty(env.getProperty("server.context-path")) ? "" : env.getProperty("server.context-path"),
+                StringUtils.defaultString(env.getProperty("server.context-path")),
                 StringUtils.isEmpty(env.getProperty("server.ssl.key-store")) ? "http" : "https",
                         InetAddress.getLocalHost().getHostAddress(),
                 env.getProperty("server.port"),
-                StringUtils.isEmpty(env.getProperty("server.context-path")) ? "" : env.getProperty("server.context-path"),
+                StringUtils.defaultString(env.getProperty("server.context-path")),
                 org.springframework.util.StringUtils.arrayToCommaDelimitedString(env.getActiveProfiles()),
                 env.getProperty("PID"),
-                env.getProperty("logging.path") + IOUtils.DIR_SEPARATOR + env.getProperty("info.artifact.id") + 
+                env.getProperty("logging.path") + File.separator + env.getProperty("info.artifact.id") + 
                 File.separator + env.getProperty("info.artifact.id") + "-" + DateFormatUtils.ISO_8601_EXTENDED_DATE_FORMAT.format(new Date()) + ".log");
         
         // @formatter:on
@@ -106,7 +105,7 @@ public class PassportLauncher extends WebMvcConfigurerAdapter {
                 System.exit(0);
             }
         });
-        if (activeProfiles.contains(ApplicationConstants.SPRING_PROFILE_DEVELOPMENT)
+        if (activeProfiles.contains(ApplicationConstants.SPRING_PROFILE_TEST)
                 && activeProfiles.contains(ApplicationConstants.SPRING_PROFILE_PRODUCTION)) {
             LOGGER.error("You have misconfigured your application! "
                     + "It should not run with both the 'dev' and 'prod' profiles at the same time.");

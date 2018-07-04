@@ -2,6 +2,7 @@ package org.infinity.passport.config;
 
 import java.util.concurrent.Executor;
 
+import org.infinity.passport.async.ExceptionHandlingAsyncTaskExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
@@ -13,8 +14,7 @@ import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-
-import org.infinity.passport.async.ExceptionHandlingAsyncTaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 
 @Configuration
 @EnableAsync
@@ -42,5 +42,16 @@ public class AsyncConfiguration implements AsyncConfigurer {
     @Override
     public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
         return new SimpleAsyncUncaughtExceptionHandler();
+    }
+
+    @Bean
+    public ThreadPoolTaskScheduler taskScheduler() {
+        ThreadPoolTaskScheduler taskScheduler = new ThreadPoolTaskScheduler();
+        taskScheduler.setPoolSize(10);
+        taskScheduler.setRemoveOnCancelPolicy(true);
+        taskScheduler.setErrorHandler(t -> LOGGER.error("Unexpected error occurred in scheduled task.", t));
+        taskScheduler.setBeanName("Passport-Thread");
+        taskScheduler.initialize();
+        return taskScheduler;
     }
 }

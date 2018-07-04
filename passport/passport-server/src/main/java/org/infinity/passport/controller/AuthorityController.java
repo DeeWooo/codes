@@ -58,12 +58,12 @@ public class AuthorityController {
     @PostMapping("/api/authority/authorities")
     @Secured({ Authority.ADMIN })
     @Timed
-    public ResponseEntity<Void> createAuthority(
-            @ApiParam(value = "权限信息", required = true) @Valid @RequestBody AuthorityDTO authorityDTO) {
-        authorityRepository.insert(Authority.fromDTO(authorityDTO));
+    public ResponseEntity<Void> create(
+            @ApiParam(value = "权限信息", required = true) @Valid @RequestBody AuthorityDTO dto) {
+        LOGGER.debug("REST request to create authority: {}", dto);
+        authorityRepository.insert(Authority.fromDTO(dto));
         return ResponseEntity.status(HttpStatus.CREATED)
-                .headers(
-                        httpHeaderCreator.createSuccessHeader("notification.authority.created", authorityDTO.getName()))
+                .headers(httpHeaderCreator.createSuccessHeader("notification.authority.created", dto.getName()))
                 .build();
     }
 
@@ -86,7 +86,7 @@ public class AuthorityController {
     @Secured({ Authority.ADMIN })
     @Timed
     public ResponseEntity<List<AuthorityDTO>> getAllAuthorities() {
-        List<AuthorityDTO> authDTOs = authorityRepository.findAll().stream().map(app -> app.asDTO())
+        List<AuthorityDTO> authDTOs = authorityRepository.findAll().stream().map(entity -> entity.asDTO())
                 .collect(Collectors.toList());
         return new ResponseEntity<>(authDTOs, HttpStatus.OK);
     }
@@ -98,7 +98,6 @@ public class AuthorityController {
     @Timed
     public ResponseEntity<AuthorityDTO> getAuthority(
             @ApiParam(value = "权限名称", required = true) @PathVariable String name) {
-        LOGGER.debug("REST request to get authority : {}", name);
         Authority authority = Optional.ofNullable(authorityRepository.findOne(name))
                 .orElseThrow(() -> new NoDataException(name));
         return new ResponseEntity<>(authority.asDTO(), HttpStatus.OK);
@@ -109,14 +108,14 @@ public class AuthorityController {
     @PutMapping("/api/authority/authorities")
     @Secured({ Authority.ADMIN })
     @Timed
-    public ResponseEntity<Void> updateAuthority(
-            @ApiParam(value = "新的权限信息", required = true) @Valid @RequestBody AuthorityDTO authorityDTO) {
-        Optional.ofNullable(authorityRepository.findOne(authorityDTO.getName()))
-                .orElseThrow(() -> new NoDataException(authorityDTO.getName()));
-        authorityRepository.save(Authority.fromDTO(authorityDTO));
+    public ResponseEntity<Void> update(
+            @ApiParam(value = "新的权限信息", required = true) @Valid @RequestBody AuthorityDTO dto) {
+        LOGGER.debug("REST request to update authority: {}", dto);
+        Optional.ofNullable(authorityRepository.findOne(dto.getName()))
+                .orElseThrow(() -> new NoDataException(dto.getName()));
+        authorityRepository.save(Authority.fromDTO(dto));
         return ResponseEntity.status(HttpStatus.OK)
-                .headers(
-                        httpHeaderCreator.createSuccessHeader("notification.authority.updated", authorityDTO.getName()))
+                .headers(httpHeaderCreator.createSuccessHeader("notification.authority.updated", dto.getName()))
                 .build();
     }
 
@@ -125,13 +124,12 @@ public class AuthorityController {
     @DeleteMapping("/api/authority/authorities/{name}")
     @Secured({ Authority.ADMIN })
     @Timed
-    public ResponseEntity<Void> deleteAuthority(@ApiParam(value = "权限名称", required = true) @PathVariable String name) {
+    public ResponseEntity<Void> delete(@ApiParam(value = "权限名称", required = true) @PathVariable String name) {
         LOGGER.debug("REST request to delete authority: {}", name);
         if (authorityRepository.findOne(name) == null) {
             throw new NoDataException(name);
         }
         authorityRepository.delete(name);
-        LOGGER.info("Deleted authority");
         return ResponseEntity.status(HttpStatus.OK)
                 .headers(httpHeaderCreator.createSuccessHeader("notification.authority.deleted", name)).build();
     }

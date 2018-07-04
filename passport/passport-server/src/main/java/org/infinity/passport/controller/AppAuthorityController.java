@@ -55,10 +55,10 @@ public class AppAuthorityController {
     private static final Logger    LOGGER = LoggerFactory.getLogger(AppAuthorityController.class);
 
     @Autowired
-    private AppAuthorityService    appAuthorityService;
+    private AppAuthorityRepository appAuthorityRepository;
 
     @Autowired
-    private AppAuthorityRepository appAuthorityRepository;
+    private AppAuthorityService    appAuthorityService;
 
     @Autowired
     private HttpHeaderCreator      httpHeaderCreator;
@@ -68,21 +68,19 @@ public class AppAuthorityController {
     @PostMapping("/api/app-authority/app-authorities")
     @Secured({ Authority.ADMIN })
     @Timed
-    public ResponseEntity<Void> createAppAuthority(
-            @ApiParam(value = "应用权限信息", required = true) @Valid @RequestBody AppAuthorityDTO appAuthorityDTO) {
-        LOGGER.debug("REST create dict : {}", appAuthorityDTO);
-        if (appAuthorityRepository
-                .findOneByAppNameAndAuthorityName(appAuthorityDTO.getAppName(), appAuthorityDTO.getAuthorityName())
-                .isPresent()) {
-            throw new FieldValidationException("appAuthorityDTO", "appName+authorityName",
-                    MessageFormat.format("appName: {0}, authorityName: {1}", appAuthorityDTO.getAppName(),
-                            appAuthorityDTO.getAuthorityName()),
-                    "error.app.name.authority.name.exist", MessageFormat.format("appName: {0}, authorityName: {1}",
-                            appAuthorityDTO.getAppName(), appAuthorityDTO));
-        }
+    public ResponseEntity<Void> create(
+            @ApiParam(value = "应用权限信息", required = true) @Valid @RequestBody AppAuthorityDTO dto) {
+        LOGGER.debug("REST request to create app authority: {}", dto);
+        appAuthorityRepository.findOneByAppNameAndAuthorityName(dto.getAppName(), dto.getAuthorityName())
+                .ifPresent((existingEntity) -> {
+                    throw new FieldValidationException("appAuthorityDTO", "appName+authorityName",
+                            MessageFormat.format("appName: {0}, authorityName: {1}", dto.getAppName(),
+                                    dto.getAuthorityName()),
+                            "error.app.name.authority.name.exist",
+                            MessageFormat.format("appName: {0}, authorityName: {1}", dto.getAppName(), dto));
+                });
 
-        AppAuthority appAuthority = appAuthorityService.insert(appAuthorityDTO.getAppName(),
-                appAuthorityDTO.getAuthorityName());
+        AppAuthority appAuthority = appAuthorityRepository.save(AppAuthority.fromDTO(dto));
         return ResponseEntity
                 .status(HttpStatus.CREATED).headers(httpHeaderCreator
                         .createSuccessHeader("notification.app.authority.created", appAuthority.getAuthorityName()))
@@ -100,8 +98,8 @@ public class AppAuthorityController {
             throws URISyntaxException {
         Page<AppAuthority> appAuthorities = appAuthorityService.findByAppNameAndAuthorityNameCombinations(pageable,
                 appName, authorityName);
-        List<AppAuthorityDTO> appAuthorityDTOs = appAuthorities.getContent().stream()
-                .map(appAuthority -> appAuthority.asDTO()).collect(Collectors.toList());
+        List<AppAuthorityDTO> appAuthorityDTOs = appAuthorities.getContent().stream().map(entity -> entity.asDTO())
+                .collect(Collectors.toList());
         HttpHeaders headers = PaginationUtils.generatePaginationHttpHeaders(appAuthorities,
                 "/api/app-authority/app-authorities");
         return new ResponseEntity<>(appAuthorityDTOs, headers, HttpStatus.OK);
@@ -115,9 +113,9 @@ public class AppAuthorityController {
     public ResponseEntity<AppAuthorityDTO> getAppAuthority(
             @ApiParam(value = "字典编号", required = true) @PathVariable String id) {
         LOGGER.debug("REST request to get app authority : {}", id);
-        AppAuthority appAuthority = Optional.ofNullable(appAuthorityRepository.findOne(id))
+        AppAuthority entity = Optional.ofNullable(appAuthorityRepository.findOne(id))
                 .orElseThrow(() -> new NoDataException(id));
-        return new ResponseEntity<>(appAuthority.asDTO(), HttpStatus.OK);
+        return new ResponseEntity<>(entity.asDTO(), HttpStatus.OK);
     }
 
     @ApiOperation("根据应用名称检索应用权限信息")
@@ -141,15 +139,14 @@ public class AppAuthorityController {
     @PutMapping("/api/app-authority/app-authorities")
     @Secured({ Authority.ADMIN })
     @Timed
-    public ResponseEntity<Void> updateAppAuthority(
-            @ApiParam(value = "新的应用权限信息", required = true) @Valid @RequestBody AppAuthorityDTO appAuthorityDTO) {
-        Optional.ofNullable(appAuthorityRepository.findOne(appAuthorityDTO.getId()))
-                .orElseThrow(() -> new NoDataException(appAuthorityDTO.getId()));
-        appAuthorityService.update(appAuthorityDTO.getId(), appAuthorityDTO.getAppName(),
-                appAuthorityDTO.getAuthorityName());
-        return ResponseEntity
-                .status(HttpStatus.OK).headers(httpHeaderCreator
-                        .createSuccessHeader("notification.app.authority.updated", appAuthorityDTO.getAuthorityName()))
+    public ResponseEntity<Void> update(
+            @ApiParam(value = "新的应用权限信息", required = true) @Valid @RequestBody AppAuthorityDTO dto) {
+        LOGGER.debug("REST request to update app authority: {}", dto);
+        Optional.ofNullable(appAuthorityRepository.findOne(dto.getId()))
+                .orElseThrow(() -> new NoDataException(dto.getId()));
+        appAuthorityRepository.save(AppAuthority.fromDTO(dto));
+        return ResponseEntity.status(HttpStatus.OK).headers(
+                httpHeaderCreator.createSuccessHeader("notification.app.authority.updated", dto.getAuthorityName()))
                 .build();
     }
 
@@ -158,7 +155,7 @@ public class AppAuthorityController {
     @DeleteMapping("/api/app-authority/app-authorities/{id}")
     @Secured({ Authority.ADMIN })
     @Timed
-    public ResponseEntity<Void> deleteAppAuthority(@ApiParam(value = "字典编号", required = true) @PathVariable String id) {
+    public ResponseEntity<Void> delete(@ApiParam(value = "字典编号", required = true) @PathVariable String id) {
         LOGGER.debug("REST request to delete app authority: {}", id);
         AppAuthority appAuthority = Optional.ofNullable(appAuthorityRepository.findOne(id))
                 .orElseThrow(() -> new NoDataException(id));

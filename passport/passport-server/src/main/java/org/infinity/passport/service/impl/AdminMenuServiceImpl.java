@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,11 +31,6 @@ public class AdminMenuServiceImpl implements AdminMenuService {
 
     @Autowired
     private AuthorityAdminMenuService authorityAdminMenuService;
-
-    @Override
-    public Optional<AdminMenu> findOneByAppNameAndSequence(String appName, Integer sequence) {
-        return adminMenuRepository.findOneByAppNameAndSequence(appName, sequence);
-    }
 
     @Override
     public AdminMenu insert(String appName, String adminMenuName, String adminMenuChineseText, String link,

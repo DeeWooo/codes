@@ -20,6 +20,8 @@ import org.infinity.passport.service.AdminMenuService;
 import org.infinity.passport.service.AuthorityService;
 import org.infinity.passport.utils.HttpHeaderCreator;
 import org.infinity.passport.utils.SecurityUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,17 +48,19 @@ import io.swagger.annotations.ApiResponses;
 @Api(tags = "权限管理菜单")
 public class AuthorityAdminMenuController {
 
-    @Autowired
-    private AuthorityService             authorityService;
+    private static final Logger          LOGGER = LoggerFactory.getLogger(AuthorityAdminMenuController.class);
 
     @Autowired
     private AuthorityAdminMenuRepository authorityAdminMenuRepository;
 
     @Autowired
+    private AdminMenuRepository          adminMenuRepository;
+
+    @Autowired
     private AdminMenuService             adminMenuService;
 
     @Autowired
-    private AdminMenuRepository          adminMenuRepository;
+    private AuthorityService             authorityService;
 
     @Autowired
     private HttpHeaderCreator            httpHeaderCreator;
@@ -129,18 +133,19 @@ public class AuthorityAdminMenuController {
     @PutMapping("/api/authority-admin-menu/update-authority-menus")
     @Secured({ Authority.ADMIN })
     @Timed
-    public ResponseEntity<Void> updateMenus(
-            @ApiParam(value = "新的权限菜单信息", required = true) @Valid @RequestBody AdminAuthorityMenusDTO authorityMenusDTO) {
+    public ResponseEntity<Void> update(
+            @ApiParam(value = "新的权限菜单信息", required = true) @Valid @RequestBody AdminAuthorityMenusDTO dto) {
+        LOGGER.debug("REST request to update admin authority menus: {}", dto);
         // 删除当前权限下的所有菜单
-        Set<String> appAdminMenuIds = adminMenuRepository.findByAppName(authorityMenusDTO.getAppName()).stream()
-                .map(AdminMenu::getId).collect(Collectors.toSet());
-        authorityAdminMenuRepository.deleteByAuthorityNameAndAdminMenuIdIn(authorityMenusDTO.getAuthorityName(),
+        Set<String> appAdminMenuIds = adminMenuRepository.findByAppName(dto.getAppName()).stream().map(AdminMenu::getId)
+                .collect(Collectors.toSet());
+        authorityAdminMenuRepository.deleteByAuthorityNameAndAdminMenuIdIn(dto.getAuthorityName(),
                 new ArrayList<String>(appAdminMenuIds));
 
         // 构建权限映射集合
-        if (CollectionUtils.isNotEmpty(authorityMenusDTO.getAdminMenuIds())) {
-            List<AuthorityAdminMenu> adminAuthorityMenus = authorityMenusDTO.getAdminMenuIds().stream()
-                    .map(adminMenuId -> new AuthorityAdminMenu(authorityMenusDTO.getAuthorityName(), adminMenuId))
+        if (CollectionUtils.isNotEmpty(dto.getAdminMenuIds())) {
+            List<AuthorityAdminMenu> adminAuthorityMenus = dto.getAdminMenuIds().stream()
+                    .map(adminMenuId -> new AuthorityAdminMenu(dto.getAuthorityName(), adminMenuId))
                     .collect(Collectors.toList());
             // 批量插入
             authorityAdminMenuRepository.save(adminAuthorityMenus);

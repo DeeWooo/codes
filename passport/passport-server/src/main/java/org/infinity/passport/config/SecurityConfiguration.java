@@ -45,12 +45,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
             .ignoring()
             .antMatchers(HttpMethod.OPTIONS, "/**")
             .antMatchers("/app/**/*.{js,html}")
-            .antMatchers("/i18n/**")
             .antMatchers("/content/**")
             .antMatchers("/open-api/**")
-            .antMatchers("/test/**")
-            .antMatchers("/swagger-ui/swagger-ui.html")
-            .antMatchers("/h2-console/**");
+            .antMatchers("/swagger-ui/swagger-ui.html");
         // @formatter:on
     }
 
@@ -67,7 +64,9 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
         .and()
             .authorizeRequests()
             .anyRequest()
-            .authenticated();
+            .authenticated()
+        .and()
+            .csrf().ignoringAntMatchers("/api/acoount/logout/**");
         // @formatter:on
     }
 

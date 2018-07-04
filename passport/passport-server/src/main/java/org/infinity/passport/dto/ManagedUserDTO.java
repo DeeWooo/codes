@@ -56,18 +56,22 @@ public class ManagedUserDTO extends UserDTO {
         return password;
     }
 
+    @Override
     public Instant getCreatedTime() {
         return createdTime;
     }
 
+    @Override
     public String getCreatedBy() {
         return createdBy;
     }
 
+    @Override
     public Instant getModifiedTime() {
         return modifiedTime;
     }
 
+    @Override
     public String getModifiedBy() {
         return modifiedBy;
     }

@@ -78,8 +78,8 @@ public final class ApplicationPropertiesUtils {
             }
         }
         LOGGER.warn("No Spring profile configured, running with default profile: {}",
-                ApplicationConstants.SPRING_PROFILE_DEVELOPMENT);
-        return ApplicationConstants.SPRING_PROFILE_DEVELOPMENT;
+                ApplicationConstants.SPRING_PROFILE_PRODUCTION);
+        return ApplicationConstants.SPRING_PROFILE_PRODUCTION;
     }
 
     /**

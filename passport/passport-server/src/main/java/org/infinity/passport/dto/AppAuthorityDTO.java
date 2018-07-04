@@ -21,16 +21,6 @@ public class AppAuthorityDTO implements Serializable {
     @ApiModelProperty(value = "权限名称")
     private String            authorityName;
 
-    public AppAuthorityDTO() {
-    }
-
-    public AppAuthorityDTO(String id, String appName, String authorityName) {
-        super();
-        this.id = id;
-        this.appName = appName;
-        this.authorityName = authorityName;
-    }
-
     public String getId() {
         return id;
     }

@@ -15,7 +15,6 @@ import org.infinity.passport.dto.DictDTO;
 import org.infinity.passport.exception.FieldValidationException;
 import org.infinity.passport.exception.NoDataException;
 import org.infinity.passport.repository.DictRepository;
-import org.infinity.passport.service.DictService;
 import org.infinity.passport.utils.HttpHeaderCreator;
 import org.infinity.passport.utils.PaginationUtils;
 import org.slf4j.Logger;
@@ -51,9 +50,6 @@ public class DictController {
     private static final Logger LOGGER = LoggerFactory.getLogger(DictController.class);
 
     @Autowired
-    private DictService         dictService;
-
-    @Autowired
     private DictRepository      dictRepository;
 
     @Autowired
@@ -64,19 +60,15 @@ public class DictController {
     @PostMapping("/api/dict/dicts")
     @Secured(Authority.DEVELOPER)
     @Timed
-    public ResponseEntity<Void> createDict(
-            @ApiParam(value = "数据字典信息", required = true) @Valid @RequestBody DictDTO dictDTO) {
-        LOGGER.debug("REST create dict : {}", dictDTO);
-        if (dictRepository.findOneByDictCode(dictDTO.getDictCode()).isPresent()) {
-            throw new FieldValidationException("dictDTO", "dictCode", dictDTO.getDictName(), "error.dict.exists",
-                    dictDTO.getDictName());
-        }
-
-        Dict dict = dictService.insert(dictDTO.getDictCode(), dictDTO.getDictName(), dictDTO.getRemark(),
-                dictDTO.getEnabled());
+    public ResponseEntity<Void> create(@ApiParam(value = "数据字典信息", required = true) @Valid @RequestBody DictDTO dto) {
+        LOGGER.debug("REST request to create dict: {}", dto);
+        dictRepository.findOneByDictCode(dto.getDictCode()).ifPresent((existingEntity) -> {
+            throw new FieldValidationException("dictDTO", "dictCode", dto.getDictName(), "error.dict.exists",
+                    dto.getDictName());
+        });
+        dictRepository.save(Dict.fromDTO(dto));
         return ResponseEntity.status(HttpStatus.CREATED)
-                .headers(httpHeaderCreator.createSuccessHeader("notification.dict.created", dict.getDictName()))
-                .build();
+                .headers(httpHeaderCreator.createSuccessHeader("notification.dict.created", dto.getDictName())).build();
     }
 
     @ApiOperation("获取数据字典分页列表")
@@ -89,7 +81,7 @@ public class DictController {
             throws URISyntaxException {
         Page<Dict> dicts = StringUtils.isEmpty(dictName) ? dictRepository.findAll(pageable)
                 : dictRepository.findByDictName(pageable, dictName);
-        List<DictDTO> dictDTOs = dicts.getContent().stream().map(dict -> dict.asDTO()).collect(Collectors.toList());
+        List<DictDTO> dictDTOs = dicts.getContent().stream().map(entity -> entity.asDTO()).collect(Collectors.toList());
         HttpHeaders headers = PaginationUtils.generatePaginationHttpHeaders(dicts, "/api/dict/dicts");
         return new ResponseEntity<>(dictDTOs, headers, HttpStatus.OK);
     }
@@ -100,9 +92,8 @@ public class DictController {
     @Secured({ Authority.DEVELOPER, Authority.USER })
     @Timed
     public ResponseEntity<DictDTO> getDict(@ApiParam(value = "字典编号", required = true) @PathVariable String id) {
-        LOGGER.debug("REST request to get dict : {}", id);
-        Dict dict = Optional.ofNullable(dictRepository.findOne(id)).orElseThrow(() -> new NoDataException(id));
-        return new ResponseEntity<>(dict.asDTO(), HttpStatus.OK);
+        Dict entity = Optional.ofNullable(dictRepository.findOne(id)).orElseThrow(() -> new NoDataException(id));
+        return new ResponseEntity<>(entity.asDTO(), HttpStatus.OK);
     }
 
     @ApiOperation("根据字典的状态获取数据字典")
@@ -127,15 +118,12 @@ public class DictController {
     @PutMapping("/api/dict/dicts")
     @Secured(Authority.DEVELOPER)
     @Timed
-    public ResponseEntity<Void> updateDict(
-            @ApiParam(value = "新的数据字典信息", required = true) @Valid @RequestBody DictDTO dictDTO) {
-        Optional.ofNullable(dictRepository.findOne(dictDTO.getId()))
-                .orElseThrow(() -> new NoDataException(dictDTO.getId()));
-        dictService.update(dictDTO.getId(), dictDTO.getDictCode(), dictDTO.getDictName(), dictDTO.getRemark(),
-                dictDTO.getEnabled());
+    public ResponseEntity<Void> update(@ApiParam(value = "新的数据字典信息", required = true) @Valid @RequestBody DictDTO dto) {
+        LOGGER.debug("REST request to update dict: {}", dto);
+        Optional.ofNullable(dictRepository.findOne(dto.getId())).orElseThrow(() -> new NoDataException(dto.getId()));
+        dictRepository.save(Dict.fromDTO(dto));
         return ResponseEntity.status(HttpStatus.OK)
-                .headers(httpHeaderCreator.createSuccessHeader("notification.dict.updated", dictDTO.getDictName()))
-                .build();
+                .headers(httpHeaderCreator.createSuccessHeader("notification.dict.updated", dto.getDictName())).build();
     }
 
     @ApiOperation(value = "根据字典ID删除数据字典信息", notes = "数据有可能被其他数据所引用，删除之后可能出现一些问题")
@@ -143,11 +131,10 @@ public class DictController {
     @DeleteMapping("/api/dict/dicts/{id}")
     @Secured(Authority.DEVELOPER)
     @Timed
-    public ResponseEntity<Void> deleteDict(@ApiParam(value = "字典编号", required = true) @PathVariable String id) {
+    public ResponseEntity<Void> delete(@ApiParam(value = "字典编号", required = true) @PathVariable String id) {
         LOGGER.debug("REST request to delete dict: {}", id);
         Dict dict = Optional.ofNullable(dictRepository.findOne(id)).orElseThrow(() -> new NoDataException(id));
         dictRepository.delete(id);
-        LOGGER.info("Deleted dict");
         return ResponseEntity.ok()
                 .headers(httpHeaderCreator.createSuccessHeader("notification.dict.deleted", dict.getDictName()))
                 .build();

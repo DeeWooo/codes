@@ -19,21 +19,4 @@ public class DictServiceImpl implements DictService {
     public Map<String, String> findDictCodeDictNameMap() {
         return dictRepository.findAll().stream().collect(Collectors.toMap(Dict::getDictCode, Dict::getDictName));
     }
-
-    @Override
-    public Dict insert(String dictCode, String dictName, String remark, Boolean enabled) {
-        return dictRepository.save(new Dict(dictCode, dictName, remark, enabled));
-    }
-
-    @Override
-    public void update(String id, String dictCode, String dictName, String remark, Boolean enabled) {
-        Dict entity = dictRepository.findOne(id);
-        if (entity != null) {
-            entity.setDictCode(dictCode);
-            entity.setDictName(dictName);
-            entity.setRemark(remark);
-            entity.setEnabled(enabled);
-            dictRepository.save(entity);
-        }
-    }
 }

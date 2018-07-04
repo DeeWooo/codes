@@ -16,11 +16,7 @@ public final class ApplicationConstants {
     // Spring profile
     public static final String              SPRING_PROFILES_ACTIVE         = "spring.profiles.active";
 
-    public static final String              SPRING_PROFILE_DEVELOPMENT     = "dev";
-
     public static final String              SPRING_PROFILE_TEST            = "test";
-
-    public static final String              SPRING_PROFILE_DEMO            = "demo";
 
     public static final String              SPRING_PROFILE_PRODUCTION      = "prod";
 
@@ -36,9 +32,9 @@ public final class ApplicationConstants {
     // Spring profile used to tracing request with Spring Cloud Zipkin
     public static final String              SPRING_PROFILE_ZIPKIN          = "zipkin";
 
-    public static final String[]            AVAILABLE_PROFILES             = new String[] { SPRING_PROFILE_DEVELOPMENT,
-            SPRING_PROFILE_TEST, SPRING_PROFILE_DEMO, SPRING_PROFILE_PRODUCTION, SPRING_PROFILE_NO_SWAGGER,
-            SPRING_PROFILE_NO_AOP_LOGGING, SPRING_PROFILE_ZIPKIN, SPRING_PROFILE_SERVICE_METRICS };
+    public static final String[]            AVAILABLE_PROFILES             = new String[] { SPRING_PROFILE_TEST,
+            SPRING_PROFILE_PRODUCTION, SPRING_PROFILE_NO_SWAGGER, SPRING_PROFILE_NO_AOP_LOGGING, SPRING_PROFILE_ZIPKIN,
+            SPRING_PROFILE_SERVICE_METRICS };
 
     public static final String              SYSTEM_ACCOUNT                 = "system";
 
@@ -52,6 +48,4 @@ public final class ApplicationConstants {
         HANLP_DICT_MAP.put(HanlpPersonName.class.getName(), HanlpPersonName.class.getSimpleName());
     };
 
-    private ApplicationConstants() {
-    }
 }

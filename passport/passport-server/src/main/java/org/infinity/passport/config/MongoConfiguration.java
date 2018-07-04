@@ -3,6 +3,9 @@ package org.infinity.passport.config;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.infinity.passport.config.oauth2.OAuth2AccessTokenReadConverter;
+import org.infinity.passport.config.oauth2.OAuth2AuthenticationReadConverter;
+import org.infinity.passport.config.oauth2.OAuth2RefreshTokenReadConverter;
 import org.infinity.passport.setup.DatabaseInitialSetup;
 import org.infinity.passport.utils.JSR310DateConverters.DateToZonedDateTimeConverter;
 import org.infinity.passport.utils.JSR310DateConverters.ZonedDateTimeToDateConverter;
@@ -54,6 +57,9 @@ public class MongoConfiguration {
     @Bean
     public CustomConversions customConversions() {
         List<Converter<?, ?>> converters = new ArrayList<>();
+        converters.add(new OAuth2AccessTokenReadConverter());
+        converters.add(new OAuth2RefreshTokenReadConverter());
+        converters.add(new OAuth2AuthenticationReadConverter());
         converters.add(DateToZonedDateTimeConverter.INSTANCE);
         converters.add(ZonedDateTimeToDateConverter.INSTANCE);
         return new CustomConversions(converters);

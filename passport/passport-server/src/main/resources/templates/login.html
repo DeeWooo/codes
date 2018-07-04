@@ -9,7 +9,7 @@
         <link rel="stylesheet" th:href="@{content/css/animate.css}" />
         <link rel="stylesheet" th:href="@{content/css/style.css}" />
     </head>
-    <body class="gray-bg" th:style="'background:url(' + @{/content/img/background/bg1.jpg} + ');background-size:cover;'">
+    <body class="gray-bg" th:style="'background:url(' + @{/content/img/background/bg3.jpg} + ');background-size:cover;'">
         <div class="ribbon hidden"><a href="" ></a></div>
         <div class="middle-box text-center loginscreen animated bounceInDown">
             <h1 class="logo-name" style="font-size:65px">PASSPORT</h1>
@@ -28,7 +28,7 @@
                     <input type="password" name="password" class="form-control" placeholder="Password" required="required"/>
                 </div>
                 <input type="hidden" id="csrf_token" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                <button type="submit" class="btn btn-primary block full-width m-b font-bold">Sign In</button>
+                <button id="signInBtn" type="submit" class="btn btn-primary block full-width m-b font-bold">Sign In</button>
                 
                 <a href=".#/reset/request" class="text-warning font-bold"><small>Forgot password?</small></a>
                 <p class="text-muted text-center font-bold"><small>Do not have an account?</small></p>
@@ -36,7 +36,7 @@
             </form>
         </div>
         <div class="navbar-fixed-bottom text-center">
-            <p class="m-t text-muted font-bold"><small>www.deepbrain.ai &copy; 2017</small></p>
+            <p class="m-t text-muted font-bold"><small>www.deepbrain.ai &copy; 2018</small></p>
         </div>
         <!-- Mainly scripts -->
         <script th:src="@{content/js/jquery/jquery-3.1.1.min.js}"></script>
@@ -48,6 +48,7 @@
                     $('div.ribbon').removeClass('hidden').find('a').text(result.ribbonEnv.toUpperCase());
                 }
             });
+            $('#signInBtn').focus();
         </script>
     </body>
 </html>
